@@ -68,7 +68,7 @@ public class PongServer extends Thread {
                         p.setInput(playerState.input);
                     }
                 }
-
+                // TODO: Use timestamps to ensure GameEvents are recorded by the client
                 if (!updatedPlayers.contains(playerState.id)) {
                     Player playerArr[] = new Player[currentPlayers().size()];
                     playerArr = currentPlayers().toArray(playerArr);
@@ -108,14 +108,25 @@ public class PongServer extends Thread {
 
         double[] center = {0,0};
         double incr = Math.PI*2/cPlayers.size();
-        for (int p = 0; p < cPlayers.size(); p++) {
-            double angle1 = p*incr;
-            double angle2 = (p+1)*incr;
+        if (cPlayers.size() > 2) {
+            for (int p = 0; p < cPlayers.size(); p++) {
+                double angle1 = p * incr;
+                double angle2 = (p + 1) * incr;
 
-            PlayerBounds playerBounds = new PlayerBounds(new Point2D((int)(Math.cos(angle1)*radius + center[0]),(int)(Math.sin(angle1)*radius + center[1])),new Point2D(
-                    (int)(Math.cos(angle2)*radius + center[0]),(int)(Math.sin(angle2)*radius + center[1])));
-            cPlayers.get(p).setPlayerBounds(playerBounds);
+                PlayerBounds playerBounds = new PlayerBounds(new Point2D((int) (Math.cos(angle1) * radius + center[0]), (int) (Math.sin(angle1) * radius + center[1])), new Point2D(
+                        (int) (Math.cos(angle2) * radius + center[0]), (int) (Math.sin(angle2) * radius + center[1])));
+                cPlayers.get(p).setPlayerBounds(playerBounds);
+            }
+        } else if (cPlayers.size() == 2) {
+
+            PlayerBounds left = new PlayerBounds(new Point2D(radius,-radius/2),new Point2D(radius,radius/2));
+            PlayerBounds right = new PlayerBounds(new Point2D(-radius,-radius/2),new Point2D(-radius,radius/2));
+            cPlayers.get(0).setPlayerBounds(left);
+            cPlayers.get(1).setPlayerBounds(right);
         }
+
+
+
 
         updatedPlayers.clear();
     }

@@ -14,6 +14,7 @@ public class GameLoop extends Thread {
     private double paddleWidth = 50;
     private double paddleHeight = 15;
     private boolean regenerateBounds;
+    private double invisibleBounds = -1;
 
     public GameLoop (CopyOnWriteArrayList players) {
         this.players = players;
@@ -120,6 +121,7 @@ public class GameLoop extends Thread {
                         double angleToPt = Math.atan2(ballPos.getY() - collisionPt.getY(), ballPos.getX() - collisionPt.getX());
                         double diff = angleToPt - ballDir;
                         ball.setDirection(ballDir - diff * 2);
+                        // TODO: Use real method to set ball angle, as in: farther from middle, higher angle.
                     } else {
                         // player is eliminated
                         p.setEliminated(true);
@@ -129,14 +131,25 @@ public class GameLoop extends Thread {
                     }
                 }
             }
+        }
 
+        if (invisibleBounds >= 0) {
+            double radius = ball.getRadius();
+            if (ballPos.getY() - radius < -invisibleBounds || ballPos.getY() + radius > invisibleBounds) {
+                Point2D vel = ball.getVelocity();
+                ball.setVelocity(new Point2D(vel.getX(),-vel.getY()));
+            }
         }
     }
+
+
 
     public Point2D getBallPosition() {
         return ball.getPosition();
     }
-
+    public void setInvisibleBounds(double bounds) {
+        invisibleBounds = bounds;
+    }
     public boolean needToRegenerateBounds() {
         if (regenerateBounds) {
             regenerateBounds = false;

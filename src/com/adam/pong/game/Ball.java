@@ -37,6 +37,8 @@ public class Ball {
         this.position = vel;
     }
 
+    public Point2D getVelocity() { return velocity; }
+
     public void setDirection(double angle) {
         double magnitude = Math.sqrt(Math.pow(velocity.getX(),2)+Math.pow(velocity.getY(),2));
         this.velocity = new Point2D(Math.cos(angle)*magnitude,Math.sin(angle)*magnitude);
