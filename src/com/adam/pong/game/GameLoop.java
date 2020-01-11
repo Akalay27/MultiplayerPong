@@ -11,8 +11,9 @@ public class GameLoop extends Thread {
     private boolean running;
     private List<Player> players;
     private Ball ball;
-    private double paddleWidth = 50;
-    private double paddleHeight = 15;
+    private double paddleWidth = 25;
+    private double paddleHeight = 7.5;
+    private double paddleBounceSpread = 45;
     private boolean regenerateBounds;
     private double invisibleBounds = -1;
 
@@ -81,7 +82,8 @@ public class GameLoop extends Thread {
             PlayerBounds bounds = players.get(0).getPlayerBounds();
             if (bounds != null) {
                 double entireWidth = Math.sqrt(Math.pow(bounds.pt1.getX() - bounds.pt2.getX(), 2) + Math.pow(bounds.pt1.getY() - bounds.pt2.getY(), 2));
-                double usableWidth = entireWidth - paddleWidth - paddleHeight * Math.tan(Math.PI / players.size());
+                double usableWidth = entireWidth - paddleWidth;
+                if (players.size() > 2) usableWidth = usableWidth - paddleHeight * Math.tan(Math.PI / players.size());
                 double moveAmount = usableWidth / entireWidth;
                 double moveBound = (1 - moveAmount);
 
@@ -117,11 +119,16 @@ public class GameLoop extends Thread {
                 if (distToPt < ball.getRadius()) {
                     if (PongUtils.isPointOnSegment(paddle.pt1,paddle.pt4,collisionPt,0.001)) {
                         // ball hit paddle
-                        double ballDir = ball.getDirection();
-                        double angleToPt = Math.atan2(ballPos.getY() - collisionPt.getY(), ballPos.getX() - collisionPt.getX());
-                        double diff = angleToPt - ballDir;
-                        ball.setDirection(ballDir - diff * 2);
+//                        double ballDir = ball.getDirection();
+//                        double angleToPt = Math.atan2(ballPos.getY() - collisionPt.getY(), ballPos.getX() - collisionPt.getX());
+//                        double diff = angleToPt - ballDir;
+//                        ball.setDirection(ballDir - diff * 2);
+                        Point2D paddleCenter = paddle.getCenter();
+                        double angleToCenter = Math.atan2(ballPos.getY()-paddleCenter.getY(),ballPos.getX()-paddleCenter.getX());
+                        ball.setDirection(angleToCenter);
+
                         // TODO: Use real method to set ball angle, as in: farther from middle, higher angle.
+
                     } else {
                         // player is eliminated
                         p.setEliminated(true);
@@ -138,6 +145,7 @@ public class GameLoop extends Thread {
             if (ballPos.getY() - radius < -invisibleBounds || ballPos.getY() + radius > invisibleBounds) {
                 Point2D vel = ball.getVelocity();
                 ball.setVelocity(new Point2D(vel.getX(),-vel.getY()));
+
             }
         }
     }
@@ -160,6 +168,7 @@ public class GameLoop extends Thread {
     }
 
     private void resetBall() {
-        ball = new Ball(new Point2D(0,0), new Point2D(1,5),15);
+        double angle = Math.random()*2*Math.PI;
+        ball = new Ball(new Point2D(0,0), new Point2D(Math.cos(angle)*20,Math.sin(angle)*20),15);
     }
 }

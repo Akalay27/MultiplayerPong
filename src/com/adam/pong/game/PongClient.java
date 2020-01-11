@@ -9,11 +9,12 @@ public class PongClient extends Thread {
 
     private DatagramSocket socket;
     private InetAddress serverAddress;
-    private byte[] buf = new byte[1024];
-    private int id;
+    private byte[] buf;
+    protected int id;
     private String name;
-    private Player[] players;
-    private Point2D ballPosition;
+    protected Player[] players;
+    protected Point2D ballPosition;
+    private int bufferSize = 65536;
 
     public PongClient (String name, byte[] address) throws SocketException, UnknownHostException {
 
@@ -31,7 +32,7 @@ public class PongClient extends Thread {
         DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAddress, 4445);
         socket.send(packet);
 
-        buf = new byte[512];
+        buf = new byte[bufferSize];
         packet = new DatagramPacket(buf, buf.length);
 
         socket.receive(packet);
@@ -49,7 +50,7 @@ public class PongClient extends Thread {
         DatagramPacket packet = new DatagramPacket(buf,buf.length,serverAddress, 4445);
         socket.send(packet);
 
-        buf = new byte[4096];
+        buf = new byte[bufferSize];
         packet = new DatagramPacket(buf,buf.length);
         socket.receive(packet);
         System.out.println("Packet size: " + packet.getLength());

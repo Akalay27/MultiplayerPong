@@ -83,6 +83,7 @@ public class Game extends Application {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             camera.setTransform(client.getPlayers(),client.getPlayerId());
             for (Player p : client.getPlayers()) {
                 camera.drawPlayer(gc, p);

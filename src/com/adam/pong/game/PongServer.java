@@ -109,6 +109,7 @@ public class PongServer extends Thread {
         double[] center = {0,0};
         double incr = Math.PI*2/cPlayers.size();
         if (cPlayers.size() > 2) {
+            gameLoop.setInvisibleBounds(-1);
             for (int p = 0; p < cPlayers.size(); p++) {
                 double angle1 = p * incr;
                 double angle2 = (p + 1) * incr;
@@ -118,11 +119,12 @@ public class PongServer extends Thread {
                 cPlayers.get(p).setPlayerBounds(playerBounds);
             }
         } else if (cPlayers.size() == 2) {
-
-            PlayerBounds left = new PlayerBounds(new Point2D(radius,-radius/2),new Point2D(radius,radius/2));
-            PlayerBounds right = new PlayerBounds(new Point2D(-radius,-radius/2),new Point2D(-radius,radius/2));
+            double arenaScale = 4;
+            PlayerBounds left = new PlayerBounds(new Point2D(radius*arenaScale,-radius/2*arenaScale),new Point2D(radius*arenaScale,radius/2*arenaScale));
+            PlayerBounds right = new PlayerBounds(new Point2D(-radius*arenaScale,-radius/2*arenaScale),new Point2D(-radius*arenaScale,radius/2*arenaScale));
             cPlayers.get(0).setPlayerBounds(left);
             cPlayers.get(1).setPlayerBounds(right);
+            gameLoop.setInvisibleBounds(radius*arenaScale);
         }
 
 

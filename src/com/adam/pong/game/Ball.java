@@ -20,11 +20,6 @@ public class Ball {
         return PongUtils.projectPointOnLine(pt1,pt2,position);
     }
 
-
-    public Ball(Point2D pos) {
-        this.position = pos;
-    }
-
     public Point2D getPosition() {
         return position;
     }
@@ -34,7 +29,7 @@ public class Ball {
     }
 
     public void setVelocity(Point2D vel) {
-        this.position = vel;
+        this.velocity = vel;
     }
 
     public Point2D getVelocity() { return velocity; }

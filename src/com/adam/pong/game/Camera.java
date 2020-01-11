@@ -30,7 +30,7 @@ public class Camera {
         Point2D boundsPt2 = transPt(playerBounds.pt2);
 
         gc.strokeLine(boundsPt1.getX(), boundsPt1.getY(), boundsPt2.getX(), boundsPt2.getY());
-       // gc.setFill(playerColor);
+        gc.setFill(playerColor);
         Paddle paddle = player.getPaddle();
         Point2D paddlePt1 = transPt(paddle.pt1);
         Point2D paddlePt2 = transPt(paddle.pt2);
@@ -50,19 +50,24 @@ public class Camera {
 
     public void setTransform(Player[] players, int focusedId) {
         List<Double> boundsYValues = new ArrayList<>();
+        boolean foundPlayer = false;
+        double offsetFor2P = 0;
         for (int p = 0; p < players.length; p++) {
             boundsYValues.add(players[p].getPlayerBounds().pt1.getY());
             boundsYValues.add(players[p].getPlayerBounds().pt2.getY());
-            if (players[p].getId() == focusedId) {
-                rotation = PongUtils.lerp(rotation,-Math.PI*2/players.length/2*(1+2*p) - Math.PI/2,1);
 
+            if (players[p].getId() == focusedId) {
+                if (players.length == 2 && p == 1) offsetFor2P = Math.PI;
+                rotation = PongUtils.lerp(rotation,-Math.PI*2/players.length/2*(1+2*p) - Math.PI/2 + offsetFor2P,0.3);
+                foundPlayer = true;
             }
         }
+        if (!foundPlayer) rotation = PongUtils.lerp(rotation,0,1);
         double minY = Collections.min(boundsYValues);
         double maxY = Collections.max(boundsYValues);
 
         double cvsHeight = gc.getCanvas().getHeight();
-        scale = PongUtils.lerp(scale,cvsHeight/(maxY-minY)*0.9,0.01);
+        scale = PongUtils.lerp(scale,cvsHeight/(maxY-minY)*0.9,0.3);
 
 
 
