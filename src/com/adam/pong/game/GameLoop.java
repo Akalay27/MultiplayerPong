@@ -11,11 +11,11 @@ public class GameLoop extends Thread {
     private boolean running;
     private List<Player> players;
     private Ball ball;
-    private double paddleWidth = 25;
-    private double paddleHeight = 7.5;
-    private double paddleBounceSpread = 45;
+    public static double paddleWidth = 25;
+    public static double paddleHeight = 7.5;
     private boolean regenerateBounds;
     private double invisibleBounds = -1;
+    private double ballSpeed = 5;
 
     public GameLoop (CopyOnWriteArrayList players) {
         this.players = players;
@@ -169,6 +169,6 @@ public class GameLoop extends Thread {
 
     private void resetBall() {
         double angle = Math.random()*2*Math.PI;
-        ball = new Ball(new Point2D(0,0), new Point2D(Math.cos(angle)*20,Math.sin(angle)*20),15);
+        ball = new Ball(new Point2D(0,0), new Point2D(Math.cos(angle)*ballSpeed,Math.sin(angle)*ballSpeed),15);
     }
 }

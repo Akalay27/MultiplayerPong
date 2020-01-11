@@ -9,11 +9,12 @@ import java.net.UnknownHostException;
 // TODO: Add CPU client
 public class CPPongClient extends PongClient {
 
-    boolean running = false;
-
+    private boolean running = false;
+    private double distanceTolerance;
     public CPPongClient (String name, byte[] address) throws SocketException, UnknownHostException {
         super(name,address);
     }
+
     @Override
     public void run() {
 
@@ -24,7 +25,7 @@ public class CPPongClient extends PongClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        setDistanceTolerance();
         while (running) {
 
             Paddle paddle = null;
@@ -50,24 +51,16 @@ public class CPPongClient extends PongClient {
 
             boolean onLeft = PongUtils.isPointOnSegment(paddleCenter,bounds.pt1,projPointL,0.001);
             boolean onRight = PongUtils.isPointOnSegment(paddleCenter,bounds.pt2,projPointR,0.001);
-            if (onLeft) userInput = UserInput.RIGHT;
-            if (onRight) userInput = UserInput.LEFT;
+            double distToCenter = projPointL.distance(paddleCenter);
+            if (distToCenter > distanceTolerance) {
+                if (onLeft) userInput = UserInput.RIGHT;
+                if (onRight) userInput = UserInput.LEFT;
+            }
+
+            if (Math.random() > 0.9) setDistanceTolerance();
 
             // TODO: Add variable accepted ball impact range so they don't always land right in middle. Use a timer with a random delay or something
-            if (Math.random() > 0.5) {
-                int choice = (int)(Math.random()*3);
-                switch (choice) {
-                    case 0:
-                        userInput = UserInput.RIGHT;
-                        break;
-                    case 1:
-                        userInput = UserInput.LEFT;
-                        break;
-                    case 2:
-                        userInput = UserInput.NONE;
-                        break;
-                }
-            }
+
 
             try {
                 update(userInput);
@@ -78,6 +71,10 @@ public class CPPongClient extends PongClient {
 
         }
 
+    }
+
+    public void setDistanceTolerance() {
+        distanceTolerance = Math.random()*GameLoop.paddleWidth/3;
     }
 
 

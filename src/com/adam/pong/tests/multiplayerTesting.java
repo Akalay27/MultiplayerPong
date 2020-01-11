@@ -16,7 +16,7 @@ public class multiplayerTesting {
         PongServer server = new PongServer();
         server.start();
 
-        for (int p = 0; p < 8; p++) {
+        for (int p = 0; p < 10; p++) {
             CPPongClient client = new CPPongClient("cpuClient"+p,InetAddress.getLocalHost().getAddress());
             client.start();
 

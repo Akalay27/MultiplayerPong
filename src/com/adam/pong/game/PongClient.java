@@ -2,6 +2,7 @@ package com.adam.pong.game;
 
 import org.apache.commons.lang3.SerializationUtils;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.*;
 
@@ -19,6 +20,7 @@ public class PongClient extends Thread {
     public PongClient (String name, byte[] address) throws SocketException, UnknownHostException {
 
         socket = new DatagramSocket();
+        socket.setSoTimeout(500);
         serverAddress = InetAddress.getByAddress(address);
         this.name = name;
 
@@ -26,16 +28,27 @@ public class PongClient extends Thread {
     public PongClient() {};
 
 
-    public void connectToServer() throws IOException {
+    public void connectToServer() {
+        DatagramPacket packet;
+        while (true) {
+            try {
+                System.out.println("Sending join packet...");
+                buf = SerializationUtils.serialize(new PlayerState(name));
+                packet = new DatagramPacket(buf, buf.length, serverAddress, 4445);
 
-        buf = SerializationUtils.serialize(new PlayerState(name));
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAddress, 4445);
-        socket.send(packet);
+                socket.send(packet);
+                buf = new byte[bufferSize];
+                packet = new DatagramPacket(buf, buf.length);
+                socket.receive(packet);
 
-        buf = new byte[bufferSize];
-        packet = new DatagramPacket(buf, buf.length);
 
-        socket.receive(packet);
+
+                break;
+            } catch (IOException e) {
+                System.out.println("Could not connect to server.");
+                continue;
+            }
+        }
 
         Player newPlayer = SerializationUtils.deserialize(packet.getData());
 
