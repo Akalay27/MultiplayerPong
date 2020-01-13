@@ -27,6 +27,7 @@ public class GameLoop extends Thread {
     private double invisibleBounds = -1;
     private double ballSpeed = 5;
     private Point2D[] debugPoints = null;
+    boolean sendNewPositions = false;
 
     public GameLoop (CopyOnWriteArrayList players) {
         this.players = players;
@@ -163,22 +164,14 @@ public class GameLoop extends Thread {
         }
     }
 
-
-
     public Point2D getBallPosition() {
         return ball.getPosition();
     }
+
     public void setInvisibleBounds(double bounds) {
         invisibleBounds = bounds;
     }
-    public boolean needToRegenerateBounds() {
-        if (regenerateBounds) {
-            regenerateBounds = false;
-            return true;
-        } else {
-            return false;
-        }
-    }
+
     public ArrayList<Player> currentPlayers() {
         ArrayList<Player> cPlayers = new ArrayList<>();
         for (Player p : players) {
@@ -187,6 +180,7 @@ public class GameLoop extends Thread {
 
         return cPlayers;
     }
+
     public Point2D[] getDebugPoints() {
         return debugPoints;
     }
@@ -195,4 +189,42 @@ public class GameLoop extends Thread {
         double angle = Math.random()*2*Math.PI;
         ball = new Ball(new Point2D(0,0), new Point2D(Math.cos(angle)*ballSpeed,Math.sin(angle)*ballSpeed),15);
     }
+
+    public void generatePlayerPositions() {
+        ArrayList<Player> cPlayers = currentPlayers();
+        boolean randomOrder = false;
+        double radius = 200/(2*Math.sin(Math.PI/cPlayers.size()));
+
+        double[] center = {0,0};
+        double incr = Math.PI*2/cPlayers.size();
+        if (cPlayers.size() > 2) {
+            setInvisibleBounds(-1);
+            for (int p = 0; p < cPlayers.size(); p++) {
+                double angle1 = p * incr;
+                double angle2 = (p + 1) * incr;
+
+                PlayerBounds playerBounds = new PlayerBounds(new Point2D((int) (Math.cos(angle1) * radius + center[0]), (int) (Math.sin(angle1) * radius + center[1])), new Point2D(
+                        (int) (Math.cos(angle2) * radius + center[0]), (int) (Math.sin(angle2) * radius + center[1])));
+                cPlayers.get(p).setPlayerBounds(playerBounds);
+            }
+        } else if (cPlayers.size() == 2) {
+            double arenaScale = 4;
+            PlayerBounds left = new PlayerBounds(new Point2D(radius*arenaScale,-radius/2*arenaScale),new Point2D(radius*arenaScale,radius/2*arenaScale));
+            PlayerBounds right = new PlayerBounds(new Point2D(-radius*arenaScale,radius/2*arenaScale),new Point2D(-radius*arenaScale,-radius/2*arenaScale));
+            cPlayers.get(0).setPlayerBounds(left);
+            cPlayers.get(1).setPlayerBounds(right);
+            setInvisibleBounds(radius/2*arenaScale);
+        }
+
+        sendNewPositions = true;
+    }
+    public boolean needToUpdatePlayers() {
+        if (sendNewPositions) {
+            sendNewPositions = false;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

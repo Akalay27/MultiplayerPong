@@ -46,7 +46,8 @@ public class CPPongClient extends PongClient {
                 continue;
 
             }
-            if (!paddle.isNull()) {
+
+            if (!(paddle == null || paddle.isNull())) {
                 Point2D paddleCenter = paddle.getCenter();
                 Point2D projPointL = PongUtils.projectPointOnLine(bounds.pt1, paddleCenter, ballPosition);
                 Point2D projPointR = PongUtils.projectPointOnLine(paddleCenter, bounds.pt2, ballPosition);
@@ -62,9 +63,6 @@ public class CPPongClient extends PongClient {
             }
 
             if (Math.random() > 0.9) setDistanceTolerance();
-
-            // TODO: Add variable accepted ball impact range so they don't always land right in middle. Use a timer with a random delay or something
-
 
             try {
                 update(userInput);

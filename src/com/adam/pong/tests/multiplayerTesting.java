@@ -19,7 +19,6 @@ public class multiplayerTesting {
         for (int p = 0; p < 8; p++) {
             CPPongClient client = new CPPongClient("cpuClient"+p,InetAddress.getLocalHost().getAddress());
             client.start();
-
         }
     }
 }

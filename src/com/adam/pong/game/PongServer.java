@@ -36,9 +36,10 @@ public class PongServer extends Thread {
 
         while (running) {
 
-            if (gameLoop.needToRegenerateBounds()) {
-                generatePlayerPositions();
+            if (gameLoop.needToUpdatePlayers()) {
+                updatedPlayers.clear();
             }
+
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
             try {
@@ -59,7 +60,7 @@ public class PongServer extends Thread {
                 players.add(newPlayer);
                 System.out.println(playerState.name + " joined the game.");
                 buf = SerializationUtils.serialize(newPlayer);
-                generatePlayerPositions();
+
             } else {
 
                 // if it is a normal packet from an already registered player
@@ -102,38 +103,6 @@ public class PongServer extends Thread {
         return player;
     }
 
-    public void generatePlayerPositions() {
-        ArrayList<Player> cPlayers = currentPlayers();
-        boolean randomOrder = false;
-        double radius = 200/(2*Math.sin(Math.PI/cPlayers.size()));
-
-        double[] center = {0,0};
-        double incr = Math.PI*2/cPlayers.size();
-        if (cPlayers.size() > 2) {
-            gameLoop.setInvisibleBounds(-1);
-            for (int p = 0; p < cPlayers.size(); p++) {
-                double angle1 = p * incr;
-                double angle2 = (p + 1) * incr;
-
-                PlayerBounds playerBounds = new PlayerBounds(new Point2D((int) (Math.cos(angle1) * radius + center[0]), (int) (Math.sin(angle1) * radius + center[1])), new Point2D(
-                        (int) (Math.cos(angle2) * radius + center[0]), (int) (Math.sin(angle2) * radius + center[1])));
-                cPlayers.get(p).setPlayerBounds(playerBounds);
-            }
-        } else if (cPlayers.size() == 2) {
-            double arenaScale = 4;
-            PlayerBounds left = new PlayerBounds(new Point2D(radius*arenaScale,-radius/2*arenaScale),new Point2D(radius*arenaScale,radius/2*arenaScale));
-            PlayerBounds right = new PlayerBounds(new Point2D(-radius*arenaScale,radius/2*arenaScale),new Point2D(-radius*arenaScale,-radius/2*arenaScale));
-            cPlayers.get(0).setPlayerBounds(left);
-            cPlayers.get(1).setPlayerBounds(right);
-            gameLoop.setInvisibleBounds(radius/2*arenaScale);
-        }
-
-
-
-
-        updatedPlayers.clear();
-    }
-
     public ArrayList<Player> currentPlayers() {
         ArrayList<Player> cPlayers = new ArrayList<>();
         for (Player p : players) {
@@ -142,6 +111,8 @@ public class PongServer extends Thread {
 
         return cPlayers;
     }
+
+
 
 
 
