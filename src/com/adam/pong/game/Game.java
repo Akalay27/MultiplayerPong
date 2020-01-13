@@ -74,25 +74,26 @@ public class Game extends Application {
             @Override
             public void handle(long arg0) {
 
-          //  camera.setGraphicsContext(canvas.getGraphicsContext2D());
+                //  camera.setGraphicsContext(canvas.getGraphicsContext2D());
 
-            gc.clearRect(0,0,canvas.getWidth(),canvas.getHeight());
+                gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-            try {
-                client.update(userInput);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                try {
+                    client.update(userInput);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-            camera.setTransform(client.getPlayers(),client.getPlayerId());
-            for (Player p : client.getPlayers()) {
-                camera.drawPlayer(gc, p);
-            }
+                camera.setTransform(client.getPlayers(), client.getPlayerId());
+                for (Player p : client.getPlayers()) {
+                    camera.drawPlayer(gc, p);
+                }
 
 
-
-            camera.drawBall(client.getBallPosition());
-
+                camera.drawBall(client.getBallPosition());
+                if (client.getDebugPoints() != null) {
+                    camera.drawPoints(gc, client.getDebugPoints(), 10);
+                }
             }
         };
 

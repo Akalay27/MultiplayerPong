@@ -72,14 +72,15 @@ public class PongServer extends Thread {
                 if (!updatedPlayers.contains(playerState.id)) {
                     Player playerArr[] = new Player[currentPlayers().size()];
                     playerArr = currentPlayers().toArray(playerArr);
-                    buf = SerializationUtils.serialize(new GameState(playerArr, gameLoop.getBallPosition(), GameEvent.REORGANIZE_PLAYERS));
+                    buf = SerializationUtils.serialize(new GameState(playerArr, gameLoop.getBallPosition(), GameEvent.REORGANIZE_PLAYERS,gameLoop.getDebugPoints()));
                     updatedPlayers.add(playerState.id);
                 } else {
                     HashMap<Integer,Paddle> paddlePositions = new HashMap<>();
                     for (Player p : currentPlayers()) {
                         paddlePositions.put(p.getId(),p.getPaddle());
                     }
-                    buf = SerializationUtils.serialize(new GameState(paddlePositions,gameLoop.getBallPosition(),GameEvent.NONE));
+                    //buf = SerializationUtils.serialize(new GameState(paddlePositions,gameLoop.getBallPosition(),GameEvent.NONE));
+                    buf = SerializationUtils.serialize(new GameState(paddlePositions,gameLoop.getBallPosition(),GameEvent.NONE,gameLoop.getDebugPoints()));
                 }
             }
 
@@ -121,10 +122,10 @@ public class PongServer extends Thread {
         } else if (cPlayers.size() == 2) {
             double arenaScale = 4;
             PlayerBounds left = new PlayerBounds(new Point2D(radius*arenaScale,-radius/2*arenaScale),new Point2D(radius*arenaScale,radius/2*arenaScale));
-            PlayerBounds right = new PlayerBounds(new Point2D(-radius*arenaScale,-radius/2*arenaScale),new Point2D(-radius*arenaScale,radius/2*arenaScale));
+            PlayerBounds right = new PlayerBounds(new Point2D(-radius*arenaScale,radius/2*arenaScale),new Point2D(-radius*arenaScale,-radius/2*arenaScale));
             cPlayers.get(0).setPlayerBounds(left);
             cPlayers.get(1).setPlayerBounds(right);
-            gameLoop.setInvisibleBounds(radius*arenaScale);
+            gameLoop.setInvisibleBounds(radius/2*arenaScale);
         }
 
 

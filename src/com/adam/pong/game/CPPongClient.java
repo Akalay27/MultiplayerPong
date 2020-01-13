@@ -42,19 +42,23 @@ public class CPPongClient extends PongClient {
             }
             if (!inGame) {
                 running = false;
+                System.out.println(getName() + " is out!");
                 continue;
+
             }
-            Point2D paddleCenter = paddle.getCenter();
-            Point2D projPointL = PongUtils.projectPointOnLine(bounds.pt1,paddleCenter,ballPosition);
-            Point2D projPointR = PongUtils.projectPointOnLine(paddleCenter,bounds.pt2,ballPosition);
+            if (!paddle.isNull()) {
+                Point2D paddleCenter = paddle.getCenter();
+                Point2D projPointL = PongUtils.projectPointOnLine(bounds.pt1, paddleCenter, ballPosition);
+                Point2D projPointR = PongUtils.projectPointOnLine(paddleCenter, bounds.pt2, ballPosition);
 
 
-            boolean onLeft = PongUtils.isPointOnSegment(paddleCenter,bounds.pt1,projPointL,0.001);
-            boolean onRight = PongUtils.isPointOnSegment(paddleCenter,bounds.pt2,projPointR,0.001);
-            double distToCenter = projPointL.distance(paddleCenter);
-            if (distToCenter > distanceTolerance) {
-                if (onLeft) userInput = UserInput.RIGHT;
-                if (onRight) userInput = UserInput.LEFT;
+                boolean onLeft = PongUtils.isPointOnSegment(paddleCenter, bounds.pt1, projPointL, 0.001);
+                boolean onRight = PongUtils.isPointOnSegment(paddleCenter, bounds.pt2, projPointR, 0.001);
+                double distToCenter = projPointL.distance(paddleCenter);
+                if (distToCenter > distanceTolerance) {
+                    if (onLeft) userInput = UserInput.RIGHT;
+                    if (onRight) userInput = UserInput.LEFT;
+                }
             }
 
             if (Math.random() > 0.9) setDistanceTolerance();

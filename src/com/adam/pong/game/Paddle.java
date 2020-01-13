@@ -23,4 +23,8 @@ public class Paddle implements Serializable {
     public Point2D getCenter() {
         return new Point2D((pt1.getX()+pt2.getX()+pt3.getX()+pt4.getX())/4,(pt1.getY()+pt2.getY()+pt3.getY()+pt4.getY())/4);
     }
+    public boolean isNull() {
+        return ((pt1==null || pt2==null || pt3==null || pt4 == null));
+    }
+
 }

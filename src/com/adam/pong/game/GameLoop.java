@@ -1,6 +1,16 @@
 package com.adam.pong.game;
 
-
+/* TODO: Add game pacing through countdowns and rearrange animations
+First move generatePlayerPositions into GameLoop
+Therefore it doesn't trigger on a new player joining
+Then just make it so the game starts on GameLoop.start() or once a certain number of players join
+Create a countdown system that changes a message String that PongServer gets and sends to the client
+Also implement a rearrange animation that goes along with the countdown
+Create a death animation trigger that the Camera instances see and then do either a particle system with points or line segments
+--> Rearrange is handled by server, death animation is handled by Game/Camera.
+Add some kind of way to tell which way the ball is going to go to start or implement a last-killer gets to choose system.
+Change CPU's so they decide every once and awhile a random segment on their paddle to keep the ball on so its not always in the middle -> purposely change the direction of the ball.
+ */
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -16,6 +26,7 @@ public class GameLoop extends Thread {
     private boolean regenerateBounds;
     private double invisibleBounds = -1;
     private double ballSpeed = 5;
+    private Point2D[] debugPoints = null;
 
     public GameLoop (CopyOnWriteArrayList players) {
         this.players = players;
@@ -83,7 +94,7 @@ public class GameLoop extends Thread {
             if (bounds != null) {
                 double entireWidth = Math.sqrt(Math.pow(bounds.pt1.getX() - bounds.pt2.getX(), 2) + Math.pow(bounds.pt1.getY() - bounds.pt2.getY(), 2));
                 double usableWidth = entireWidth - paddleWidth;
-                if (players.size() > 2) usableWidth = usableWidth - paddleHeight * Math.tan(Math.PI / players.size());
+                if (currentPlayers().size() > 2) usableWidth = usableWidth - paddleHeight * Math.tan(Math.PI / players.size());
                 double moveAmount = usableWidth / entireWidth;
                 double moveBound = (1 - moveAmount);
 
@@ -113,36 +124,38 @@ public class GameLoop extends Thread {
         for (Player p : players) {
 
             Paddle paddle = p.getPaddle();
-            if (paddle != null) {
+            if (paddle != null && !p.isEliminated()) {
                 Point2D collisionPt = ball.checkCollision(paddle.pt1,paddle.pt4);
-                double distToPt = ballPos.distance(collisionPt);
-                if (distToPt < ball.getRadius()) {
+
+                if (ballPos.distance(collisionPt) < ball.getRadius()) {
                     if (PongUtils.isPointOnSegment(paddle.pt1,paddle.pt4,collisionPt,0.001)) {
-                        // ball hit paddle
-//                        double ballDir = ball.getDirection();
-//                        double angleToPt = Math.atan2(ballPos.getY() - collisionPt.getY(), ballPos.getX() - collisionPt.getX());
-//                        double diff = angleToPt - ballDir;
-//                        ball.setDirection(ballDir - diff * 2);
+
                         Point2D paddleCenter = paddle.getCenter();
                         double angleToCenter = Math.atan2(ballPos.getY()-paddleCenter.getY(),ballPos.getX()-paddleCenter.getX());
                         ball.setDirection(angleToCenter);
 
-                        // TODO: Use real method to set ball angle, as in: farther from middle, higher angle.
-
-                    } else {
+                    }
+                Point2D boundsCollisionPt = ball.checkCollision(p.getPlayerBounds().pt1, p.getPlayerBounds().pt2);
+                if (ballPos.distance(boundsCollisionPt) < ball.getRadius()) {
+                    if (PongUtils.isPointOnSegment(p.getPlayerBounds().pt1, p.getPlayerBounds().pt2, boundsCollisionPt, 0.001)) {
                         // player is eliminated
                         p.setEliminated(true);
                         regenerateBounds = true;
+
                         resetBall();
 
                     }
                 }
+
+                }
             }
+
         }
 
         if (invisibleBounds >= 0) {
             double radius = ball.getRadius();
             if (ballPos.getY() - radius < -invisibleBounds || ballPos.getY() + radius > invisibleBounds) {
+                System.out.println(ballPos);
                 Point2D vel = ball.getVelocity();
                 ball.setVelocity(new Point2D(vel.getX(),-vel.getY()));
 
@@ -165,6 +178,17 @@ public class GameLoop extends Thread {
         } else {
             return false;
         }
+    }
+    public ArrayList<Player> currentPlayers() {
+        ArrayList<Player> cPlayers = new ArrayList<>();
+        for (Player p : players) {
+            if (!p.isEliminated()) cPlayers.add(p);
+        }
+
+        return cPlayers;
+    }
+    public Point2D[] getDebugPoints() {
+        return debugPoints;
     }
 
     private void resetBall() {

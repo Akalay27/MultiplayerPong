@@ -16,6 +16,7 @@ public class PongClient extends Thread {
     protected Player[] players;
     protected Point2D ballPosition;
     private int bufferSize = 65536;
+    private Point2D[] debugPoints;
 
     public PongClient (String name, byte[] address) throws SocketException, UnknownHostException {
 
@@ -66,7 +67,6 @@ public class PongClient extends Thread {
         buf = new byte[bufferSize];
         packet = new DatagramPacket(buf,buf.length);
         socket.receive(packet);
-        System.out.println("Packet size: " + packet.getLength());
         GameState gs = SerializationUtils.deserialize(packet.getData());
         if (gs.event == GameEvent.REORGANIZE_PLAYERS) {
             players = gs.players;
@@ -76,6 +76,7 @@ public class PongClient extends Thread {
                 p.setPaddle(gs.paddlePositions.get(p.getId()));
             }
             ballPosition = gs.ballPosition;
+            debugPoints = gs.debugPoints;
         }
 
 
@@ -92,6 +93,9 @@ public class PongClient extends Thread {
         socket.close();
     }
 
+    public Point2D[] getDebugPoints() {
+        return debugPoints;
+    }
 
     public int getPlayerId() {
         return id;
