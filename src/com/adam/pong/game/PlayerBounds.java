@@ -18,4 +18,8 @@ public class PlayerBounds implements Serializable {
     public String toString() {
         return (pt1 + " - " + pt2);
     }
+
+    public boolean isNull() {
+        return pt1==null||pt2==null;
+    }
 }

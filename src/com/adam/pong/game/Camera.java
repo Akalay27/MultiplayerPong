@@ -33,11 +33,13 @@ public class Camera {
         gc.strokeLine(boundsPt1.getX(), boundsPt1.getY(), boundsPt2.getX(), boundsPt2.getY());
         gc.setFill(playerColor);
         Paddle paddle = player.getPaddle();
-        Point2D paddlePt1 = transPt(paddle.pt1);
-        Point2D paddlePt2 = transPt(paddle.pt2);
-        Point2D paddlePt3 = transPt(paddle.pt3);
-        Point2D paddlePt4 = transPt(paddle.pt4);
-        gc.fillPolygon(new double[]{paddlePt1.getX(),paddlePt2.getX(),paddlePt3.getX(),paddlePt4.getX()},new double[]{paddlePt1.getY(),paddlePt2.getY(),paddlePt3.getY(),paddlePt4.getY()}, 4);
+      //  if (paddle != null && !paddle.isNull()) {
+            Point2D paddlePt1 = transPt(paddle.pt1);
+            Point2D paddlePt2 = transPt(paddle.pt2);
+            Point2D paddlePt3 = transPt(paddle.pt3);
+            Point2D paddlePt4 = transPt(paddle.pt4);
+            gc.fillPolygon(new double[]{paddlePt1.getX(), paddlePt2.getX(), paddlePt3.getX(), paddlePt4.getX()}, new double[]{paddlePt1.getY(), paddlePt2.getY(), paddlePt3.getY(), paddlePt4.getY()}, 4);
+     //   }
     }
 
     private Point2D transPt(Point2D pt) {
@@ -55,16 +57,19 @@ public class Camera {
         boolean foundPlayer = false;
         double offsetFor2P = 0;
         for (int p = 0; p < players.length; p++) {
-            boundsYValues.add(players[p].getPlayerBounds().pt1.getY());
-            boundsYValues.add(players[p].getPlayerBounds().pt2.getY());
+            if (!players[p].getPlayerBounds().isNull()) {
+                boundsYValues.add(players[p].getPlayerBounds().pt1.getY());
+                boundsYValues.add(players[p].getPlayerBounds().pt2.getY());
 
-            if (players[p].getId() == focusedId) {
-                if (players.length == 2 && p == 1) offsetFor2P = -Math.PI;
-                rotation = PongUtils.lerp(rotation,-Math.PI*2/players.length/2*(1+2*p) - Math.PI/2 + offsetFor2P,0.3);
-                foundPlayer = true;
+                if (players[p].getId() == focusedId) {
+                    if (players.length == 2 && p == 1) offsetFor2P = -Math.PI;
+                    rotation = PongUtils.lerp(rotation, -Math.PI * 2 / players.length / 2 * (1 + 2 * p) - Math.PI / 2 + offsetFor2P, 0.3);
+                    foundPlayer = true;
+                }
             }
         }
         if (!foundPlayer) rotation = PongUtils.lerp(rotation,0,1);
+
         double minY = Collections.min(boundsYValues);
         double maxY = Collections.max(boundsYValues);
 

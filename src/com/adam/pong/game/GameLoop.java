@@ -41,19 +41,17 @@ public class GameLoop extends Thread {
         final long OPTIMAL_TIME = 1000000000 / TARGET_FPS;
         long lastLoopTime = System.nanoTime();
 
-        while (running) {
-
+        while (true) {
             long now = System.nanoTime();
             long updateLength = now - lastLoopTime;
+            double timeDelta = updateLength / ((double) (OPTIMAL_TIME));
             lastLoopTime = now;
-
-            double timeDelta = updateLength / ((double)(OPTIMAL_TIME));
-
+            if (running) {
+                ball.move(timeDelta);
+                checkCollisions();
+            }
             updatePlayerPositions(timeDelta);
             createPaddleCoordinates();
-            ball.move(timeDelta);
-            checkCollisions();
-
             //System.out.println("I am currently dealing with " + players.size() + " players!");
 
             // do I need to actually sleep the thread if we already have a deltatime value?
@@ -187,6 +185,12 @@ public class GameLoop extends Thread {
         double angle = Math.random()*2*Math.PI;
         ball = new Ball(new Point2D(0,0), new Point2D(Math.cos(angle)*ballSpeed,Math.sin(angle)*ballSpeed),15);
     }
+
+
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
+
 
 
 

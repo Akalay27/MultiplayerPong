@@ -6,7 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameManager extends Thread {
 
-    private final double countdownTime = 5000;
+    private final double countdownTime = 1000;
     private final int minPlayersToStart = 4;
     private boolean running;
     private List<Player> players;
@@ -58,9 +58,11 @@ public class GameManager extends Thread {
                 for (Player p : players) {
                     if (p.getState() == Player.State.DEATH) {
                         p.setState(Player.State.ELIMINATED);
-                        while(createNewBounds(0.00001)) {
-                            gameLoop.resetBall();
-                        }
+                        gameLoop.resetBall();
+                        gameLoop.setRunning(false);
+                        createNewBounds(0.01);
+                        gameLoop.setRunning(true);
+                        break;
                     }
                 }
             }
@@ -68,31 +70,37 @@ public class GameManager extends Thread {
         }
     }
 
-    public boolean createNewBounds(double amnt) {
+    public void createNewBounds(double amnt) {
 
         PlayerBounds[] bounds = generatePlayerBounds();
         ArrayList<Player> cPlayers = currentPlayers();
         boolean done = false;
-        for (int p = 0; p < bounds.length; p++) {
-            PlayerBounds lastBounds = cPlayers.get(p).getPlayerBounds();
-            PlayerBounds newBounds = bounds[p];
-            if (lastBounds != null) {
-                PlayerBounds midBounds = new PlayerBounds(PongUtils.lerp(lastBounds.pt1, newBounds.pt1, amnt), PongUtils.lerp(lastBounds.pt2, newBounds.pt2, amnt));
-                cPlayers.get(p).setPlayerBounds(midBounds);
-                Point2D diff1 = midBounds.pt1.subtract(newBounds.pt1);
-                Point2D diff2 = midBounds.pt2.subtract(newBounds.pt2);
-                if (diff1.getX()+diff1.getY()+diff2.getX()+diff2.getY() < 0.1) {
-                    cPlayers.get(p).setPlayerBounds(newBounds);
-                    done = true;
-                }
-            } else {
-                cPlayers.get(p).setPlayerBounds(newBounds);
-                done = true;
-            }
+        double iterations = 1000;
+        for (int i = 0; i < iterations; i++) {
 
+
+            for (int p = 0; p < bounds.length; p++) {
+                PlayerBounds lastBounds = cPlayers.get(p).getPlayerBounds();
+                PlayerBounds newBounds = bounds[p];
+                if (lastBounds != null && !lastBounds.isNull()) {
+                    PlayerBounds midBounds = new PlayerBounds(PongUtils.lerp(lastBounds.pt1, newBounds.pt1, amnt), PongUtils.lerp(lastBounds.pt2, newBounds.pt2, amnt));
+                    cPlayers.get(p).setPlayerBounds(midBounds);
+                    Point2D diff1 = midBounds.pt1.subtract(newBounds.pt1);
+                    Point2D diff2 = midBounds.pt2.subtract(newBounds.pt2);
+//                    if (diff1.getX() + diff1.getY() + diff2.getX() + diff2.getY() < 0.1) {
+//                        done = true;
+//                    }
+
+                } else {
+                    cPlayers.get(p).setPlayerBounds(newBounds);
+
+                }
+
+            }
+            sendNewPositions = true;
         }
-        sendNewPositions = true;
-        return done;
+
+
     }
 
     public PlayerBounds[] generatePlayerBounds() {
