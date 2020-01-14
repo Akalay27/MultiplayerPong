@@ -1,15 +1,15 @@
 package com.adam.pong.game;
 
-/* TODO: Add game pacing through countdowns and rearrange animations
-First move generatePlayerPositions into GameLoop
-Therefore it doesn't trigger on a new player joining
-Then just make it so the game starts on GameLoop.start() or once a certain number of players join
-Create a countdown system that changes a message String that PongServer gets and sends to the client
-Also implement a rearrange animation that goes along with the countdown
-Create a death animation trigger that the Camera instances see and then do either a particle system with points or line segments
+/*
+TODO: Add game pacing through countdowns and rearrange animations
+DONE: First move generatePlayerBounds into GameLoop
+TODO: Then just make it so the game starts on GameLoop.start() or once a certain number of players join
+TODO: Create a countdown system that changes a message String that PongServer gets and sends to the client
+TODO: Also implement a rearrange animation that goes along with the countdown
+TODO: Create a death animation trigger that the Camera instances see and then do either a particle system with points or line segments
 --> Rearrange is handled by server, death animation is handled by Game/Camera.
-Add some kind of way to tell which way the ball is going to go to start or implement a last-killer gets to choose system.
-Change CPU's so they decide every once and awhile a random segment on their paddle to keep the ball on so its not always in the middle -> purposely change the direction of the ball.
+TODO: Add some kind of way to tell which way the ball is going to go to start or implement a last-killer gets to choose system.
+TODO: Change CPU's so they decide every once and awhile a random segment on their paddle to keep the ball on so its not always in the middle -> purposely change the direction of the ball.
  */
 import java.util.ArrayList;
 import java.util.List;
@@ -23,16 +23,15 @@ public class GameLoop extends Thread {
     private Ball ball;
     public static double paddleWidth = 25;
     public static double paddleHeight = 7.5;
-    private boolean regenerateBounds;
     private double invisibleBounds = -1;
     private double ballSpeed = 5;
     private Point2D[] debugPoints = null;
-    boolean sendNewPositions = false;
+
 
     public GameLoop (CopyOnWriteArrayList players) {
         this.players = players;
         resetBall();
-        regenerateBounds = false;
+
     }
     public void run() {
 
@@ -125,7 +124,7 @@ public class GameLoop extends Thread {
         for (Player p : players) {
 
             Paddle paddle = p.getPaddle();
-            if (paddle != null && !p.isEliminated()) {
+            if (paddle != null && p.getState() == Player.State.INGAME) {
                 Point2D collisionPt = ball.checkCollision(paddle.pt1,paddle.pt4);
 
                 if (ballPos.distance(collisionPt) < ball.getRadius()) {
@@ -140,8 +139,7 @@ public class GameLoop extends Thread {
                 if (ballPos.distance(boundsCollisionPt) < ball.getRadius()) {
                     if (PongUtils.isPointOnSegment(p.getPlayerBounds().pt1, p.getPlayerBounds().pt2, boundsCollisionPt, 0.001)) {
                         // player is eliminated
-                        p.setEliminated(true);
-                        regenerateBounds = true;
+                        p.setState(Player.State.DEATH);
 
                         resetBall();
 
@@ -175,7 +173,7 @@ public class GameLoop extends Thread {
     public ArrayList<Player> currentPlayers() {
         ArrayList<Player> cPlayers = new ArrayList<>();
         for (Player p : players) {
-            if (!p.isEliminated()) cPlayers.add(p);
+            if (p.getState() == Player.State.INGAME) cPlayers.add(p);
         }
 
         return cPlayers;
@@ -185,46 +183,11 @@ public class GameLoop extends Thread {
         return debugPoints;
     }
 
-    private void resetBall() {
+    public void resetBall() {
         double angle = Math.random()*2*Math.PI;
         ball = new Ball(new Point2D(0,0), new Point2D(Math.cos(angle)*ballSpeed,Math.sin(angle)*ballSpeed),15);
     }
 
-    public void generatePlayerPositions() {
-        ArrayList<Player> cPlayers = currentPlayers();
-        boolean randomOrder = false;
-        double radius = 200/(2*Math.sin(Math.PI/cPlayers.size()));
 
-        double[] center = {0,0};
-        double incr = Math.PI*2/cPlayers.size();
-        if (cPlayers.size() > 2) {
-            setInvisibleBounds(-1);
-            for (int p = 0; p < cPlayers.size(); p++) {
-                double angle1 = p * incr;
-                double angle2 = (p + 1) * incr;
-
-                PlayerBounds playerBounds = new PlayerBounds(new Point2D((int) (Math.cos(angle1) * radius + center[0]), (int) (Math.sin(angle1) * radius + center[1])), new Point2D(
-                        (int) (Math.cos(angle2) * radius + center[0]), (int) (Math.sin(angle2) * radius + center[1])));
-                cPlayers.get(p).setPlayerBounds(playerBounds);
-            }
-        } else if (cPlayers.size() == 2) {
-            double arenaScale = 4;
-            PlayerBounds left = new PlayerBounds(new Point2D(radius*arenaScale,-radius/2*arenaScale),new Point2D(radius*arenaScale,radius/2*arenaScale));
-            PlayerBounds right = new PlayerBounds(new Point2D(-radius*arenaScale,radius/2*arenaScale),new Point2D(-radius*arenaScale,-radius/2*arenaScale));
-            cPlayers.get(0).setPlayerBounds(left);
-            cPlayers.get(1).setPlayerBounds(right);
-            setInvisibleBounds(radius/2*arenaScale);
-        }
-
-        sendNewPositions = true;
-    }
-    public boolean needToUpdatePlayers() {
-        if (sendNewPositions) {
-            sendNewPositions = false;
-            return true;
-        } else {
-            return false;
-        }
-    }
 
 }

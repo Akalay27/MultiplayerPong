@@ -16,8 +16,9 @@ public class PongServer extends Thread {
     private byte[] buf = new byte[256];
     private boolean running;
     private DatagramSocket socket;
-    public CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<Player>();
+    public CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<>();
     private GameLoop gameLoop;
+    private GameManager gameManager;
     private List<Integer> updatedPlayers = new ArrayList<>();
     private int idCounter = 0;
 
@@ -27,6 +28,9 @@ public class PongServer extends Thread {
         System.out.println(InetAddress.getLocalHost().getHostAddress());
 
         gameLoop = new GameLoop(players);
+
+        gameManager = new GameManager(players,gameLoop);
+        gameManager.start();
         gameLoop.start();
 
     }
@@ -36,7 +40,7 @@ public class PongServer extends Thread {
 
         while (running) {
 
-            if (gameLoop.needToUpdatePlayers()) {
+            if (gameManager.needToUpdatePlayers()) {
                 updatedPlayers.clear();
             }
 
@@ -106,7 +110,7 @@ public class PongServer extends Thread {
     public ArrayList<Player> currentPlayers() {
         ArrayList<Player> cPlayers = new ArrayList<>();
         for (Player p : players) {
-            if (!p.isEliminated()) cPlayers.add(p);
+            if (p.getState() == Player.State.INGAME) cPlayers.add(p);
         }
 
         return cPlayers;

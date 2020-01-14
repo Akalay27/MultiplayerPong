@@ -5,6 +5,9 @@ import java.io.Serializable;
 
 public class Player implements Serializable {
 
+    public enum State {
+        INGAME, ELIMINATED, DEATH
+    }
     private int id;
     private String name;
     private PlayerBounds playerBounds;
@@ -12,15 +15,13 @@ public class Player implements Serializable {
     private double position;
     private UserInput input;
     private Color color;
-    private boolean eliminated;
-
+    private State state;
     public Player(int id, String name, Color color) {
         this.id = id;
         this.name = name;
         this.position = 0.5;
         this.color = color;
-        this.eliminated = false;
-
+        this.state = State.ELIMINATED;
     }
 
     public PlayerBounds getPlayerBounds() {
@@ -67,11 +68,11 @@ public class Player implements Serializable {
         this.color = color;
     }
 
-    public boolean isEliminated() {
-        return eliminated;
+    public State getState() {
+        return state;
     }
 
-    public void setEliminated(boolean eliminated) {
-        this.eliminated = eliminated;
+    public void setState(State state) {
+        this.state = state;
     }
 }

@@ -32,20 +32,15 @@ public class CPPongClient extends PongClient {
             PlayerBounds bounds = null;
             UserInput userInput = UserInput.NONE;
 
-            boolean inGame = false;
+
             for (int p = 0; p < players.length; p++) {
                 if (players[p].getId() == id) {
                     paddle = players[p].getPaddle();
                     bounds = players[p].getPlayerBounds();
-                    inGame = true;
+
                 }
             }
-            if (!inGame) {
-                running = false;
-                System.out.println(getName() + " is out!");
-                continue;
 
-            }
 
             if (!(paddle == null || paddle.isNull())) {
                 Point2D paddleCenter = paddle.getCenter();

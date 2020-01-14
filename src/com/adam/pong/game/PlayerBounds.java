@@ -13,4 +13,9 @@ public class PlayerBounds implements Serializable {
         this.pt1 = pt1;
         this.pt2 = pt2;
     }
+
+    @Override
+    public String toString() {
+        return (pt1 + " - " + pt2);
+    }
 }

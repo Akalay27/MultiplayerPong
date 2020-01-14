@@ -24,6 +24,7 @@ public class PongUtils
         return from + (to-from)*amnt;
     }
 
+    public static Point2D lerp(Point2D from, Point2D to, double amnt) { return new Point2D(lerp(from.getX(),to.getX(),amnt),lerp(from.getY(),to.getY(),amnt)); }
     public static boolean isPointOnSegment(Point2D segPt1, Point2D segPt2, Point2D point, double tolerance) {
         if (Math.abs(segPt1.distance(point) + segPt2.distance(point)-segPt1.distance(segPt2)) < tolerance) {
             return true;
