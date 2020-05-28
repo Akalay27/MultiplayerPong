@@ -6,7 +6,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="MultiplayerPong3" />
+        <module name="MultiplayerPong" />
+        <module name="MultiplayerPong4" />
       </profile>
     </annotationProcessing>
   </component>

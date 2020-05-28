@@ -132,16 +132,13 @@ public class GameLoop extends Thread {
                         Point2D paddleCenter = paddle.getCenter();
                         double angleToCenter = Math.atan2(ballPos.getY()-paddleCenter.getY(),ballPos.getX()-paddleCenter.getX());
                         ball.setDirection(angleToCenter);
-                        ball.setVelocity(ball.getVelocity().multiply(1.05));
+                        ball.setVelocity(ball.getVelocity().add(ball.getVelocity().multiply(1/ball.getVelocity().getMagnitude()*0.3)));
                     }
                 Point2D boundsCollisionPt = ball.checkCollision(p.getPlayerBounds().pt1, p.getPlayerBounds().pt2);
                 if (ballPos.distance(boundsCollisionPt) < ball.getRadius()) {
                     if (PongUtils.isPointOnSegment(p.getPlayerBounds().pt1, p.getPlayerBounds().pt2, boundsCollisionPt, 0.001)) {
                         // player is eliminated
                         p.setState(Player.State.DEATH);
-
-
-
                     }
                 }
 

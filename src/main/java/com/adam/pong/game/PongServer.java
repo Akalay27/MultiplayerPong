@@ -24,6 +24,7 @@ public class PongServer extends Thread {
 
     public PongServer() throws SocketException, UnknownHostException {
         socket = new DatagramSocket(25565);
+
         System.out.println("Server started!");
         System.out.println(InetAddress.getLocalHost().getHostAddress());
 
@@ -73,11 +74,11 @@ public class PongServer extends Thread {
                         p.setInput(playerState.input);
                     }
                 }
-                // TODO: Use timestamps to ensure GameEvents are recorded by the client
+
                 if (!updatedPlayers.contains(playerState.id)) {
                     Player playerArr[] = new Player[currentPlayers().size()];
                     playerArr = currentPlayers().toArray(playerArr);
-                    buf = SerializationUtils.serialize(new GameState(playerArr, gameLoop.getBallPosition(), GameEvent.REORGANIZE_PLAYERS,gameLoop.getDebugPoints(),gameManager.getMessage()));
+                    buf = SerializationUtils.serialize(new GameState(playerArr, gameLoop.getBallPosition(), GameEvent.REORGANIZE_PLAYERS,gameLoop.getDebugPoints(),gameManager.getMessage(), gameManager.getGraphicsEvents()));
                     updatedPlayers.add(playerState.id);
                 } else {
                     HashMap<Integer,Paddle> paddlePositions = new HashMap();
@@ -85,7 +86,7 @@ public class PongServer extends Thread {
                         paddlePositions.put(p.getId(),p.getPaddle());
                     }
                     //buf = SerializationUtils.serialize(new GameState(paddlePositions,gameLoop.getBallPosition(),GameEvent.NONE));
-                    buf = SerializationUtils.serialize(new GameState(paddlePositions,gameLoop.getBallPosition(),GameEvent.NONE,gameLoop.getDebugPoints(),gameManager.getMessage()));
+                    buf = SerializationUtils.serialize(new GameState(paddlePositions,gameLoop.getBallPosition(),GameEvent.NONE,gameLoop.getDebugPoints(),gameManager.getMessage(), gameManager.getGraphicsEvents()));
                 }
             }
 

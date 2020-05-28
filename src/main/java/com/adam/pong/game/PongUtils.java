@@ -34,7 +34,6 @@ public class PongUtils
 
     public static Point2D fromAngle(double angle) {
         Point2D pt = new Point2D(Math.cos(angle),Math.sin(angle));
-        System.out.println(pt);
         return pt;
     }
 

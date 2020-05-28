@@ -6,7 +6,7 @@ import java.io.Serializable;
 public class Player implements Serializable {
 
     public enum State {
-        INGAME, ELIMINATED, DEATH
+        INGAME, ELIMINATED, DEATH, JOINED
     }
     private int id;
     private String name;
@@ -22,7 +22,7 @@ public class Player implements Serializable {
         this.name = name;
         this.position = 0.5;
         this.color = color;
-        this.state = State.ELIMINATED;
+        this.state = State.JOINED;
     }
 
     public PlayerBounds getPlayerBounds() {

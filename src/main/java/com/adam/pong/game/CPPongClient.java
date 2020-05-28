@@ -11,6 +11,8 @@ public class CPPongClient extends PongClient {
     private boolean running = false;
     private double distanceTolerance;
     private long lastLoopTime;
+    private final int TARGET_FPS = 120;
+
 
     public CPPongClient (String name, byte[] address, int port) throws SocketException, UnknownHostException {
         super(name,address, port);
@@ -22,7 +24,7 @@ public class CPPongClient extends PongClient {
         running = true;
         try {
             connectToServer();
-            update(UserInput.NONE);
+            minimalUpdate(UserInput.NONE);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -33,7 +35,7 @@ public class CPPongClient extends PongClient {
             PlayerBounds bounds = null;
             UserInput userInput = UserInput.NONE;
 
-
+            lastLoopTime = System.nanoTime();
             for (int p = 0; p < players.length; p++) {
                 if (players[p].getId() == id) {
                     paddle = players[p].getPaddle();
@@ -61,17 +63,19 @@ public class CPPongClient extends PongClient {
             if (Math.random() > 0.9) setDistanceTolerance();
 
             try {
-                update(userInput);
+                minimalUpdate(userInput);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            long now = System.nanoTime();
 
-            lastLoopTime = now;
+
+
 
 //            try{
-//                Thread.sleep( (lastLoopTime-System.nanoTime() + 10000000)/1000000);
+//                long duration = (long) ((lastLoopTime - System.nanoTime()) + (1000.0 / TARGET_FPS));
+//                System.out.println(duration);
+//                Thread.sleep((duration >= 0) ? duration : 0);
 //            } catch (InterruptedException e) {
 //                e.printStackTrace();
 //            };
@@ -80,6 +84,7 @@ public class CPPongClient extends PongClient {
 
 
     }
+
 
     public void setDistanceTolerance() {
         distanceTolerance = Math.random()*GameLoop.paddleWidth/3;

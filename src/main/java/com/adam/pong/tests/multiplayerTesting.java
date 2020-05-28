@@ -16,10 +16,10 @@ public class multiplayerTesting {
         PongServer server = new PongServer();
         server.start();
 
-        for (int p = 0; p < 50; p++) {
-            CPPongClient client = new CPPongClient("cpuClient"+p,InetAddress.getLocalHost().getAddress(),25565);
-            client.start();
-
-        }
+//        for (int p = 0; p < 10; p++) {
+//            CPPongClient client = new CPPongClient("cpuClient"+p,InetAddress.getLocalHost().getAddress(),25565);
+//            client.start();
+//
+//        }
     }
 }

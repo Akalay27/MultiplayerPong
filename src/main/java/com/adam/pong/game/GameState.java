@@ -13,6 +13,7 @@ public class GameState implements Serializable {
     public HashMap<Integer,Paddle> paddlePositions;
     public Point2D[] debugPoints;
     public String message;
+    public GraphicsEvent[] graphicsEvents;
     // normal packets, just sending all paddle positions and current ball position
 
     // sending normal packets but now with event (for graphical purposes)
@@ -21,12 +22,13 @@ public class GameState implements Serializable {
         this.ballPosition = ballPosition;
         this.event = event;
     }
-    public GameState(Player[] players, Point2D ballPosition, GameEvent event, Point2D[] debugPoints, String message) {
+    public GameState(Player[] players, Point2D ballPosition, GameEvent event, Point2D[] debugPoints, String message, GraphicsEvent[] graphicsEvents) {
         this.players = players;
         this.ballPosition = ballPosition;
         this.event = event;
         this.debugPoints = debugPoints;
         this.message = message;
+        this.graphicsEvents = graphicsEvents;
     }
 
     // for resetting the field after a player died, or when a game starts
@@ -40,12 +42,13 @@ public class GameState implements Serializable {
         this.event = event;
         this.ballPosition = ballPosition;
     }
-    public GameState(HashMap<Integer,Paddle> paddlePositions, Point2D ballPosition, GameEvent event, Point2D[] debugPoints, String message) {
+    public GameState(HashMap<Integer,Paddle> paddlePositions, Point2D ballPosition, GameEvent event, Point2D[] debugPoints, String message, GraphicsEvent[] graphicsEvents) {
         this.paddlePositions = paddlePositions;
         this.event = event;
         this.ballPosition = ballPosition;
         this.debugPoints = debugPoints;
         this.message = message;
+        this.graphicsEvents = graphicsEvents;
     }
 
 

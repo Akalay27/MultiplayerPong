@@ -93,9 +93,10 @@ public class Camera {
     }
 
     public void drawMessage(String message) {
-        gc.setFill(Color.BLACK);
-        gc.setFont(new Font(null,scale*50));
-        Point2D textPos = transPt(new Point2D(0,GameLoop.ballRadius*1.5),false);
+        gc.setFill(Color.WHITE);
+        gc.setFont(new Font(null,scale*20));
+        gc.setTextBaseline(VPos.CENTER);
+        Point2D textPos = transPt(new Point2D(0,0),false);
         gc.fillText(message,textPos.getX(),textPos.getY());
     }
 
@@ -129,13 +130,13 @@ public class Camera {
     public void drawShatteredLine(Point2D pt1, Point2D pt2, Point2D focus) {
 
         double angle = Math.atan2(pt1.getY()-pt2.getY(),pt1.getX()-pt2.getX()) + Math.PI/2;
-        int numSegments = 30;
+        int numSegments = 200;
         double totalDist = pt1.distance(pt2);
         for (int i = 0; i < numSegments; i++) {
             Point2D center = PongUtils.lerp(pt1,pt2,(double)i/numSegments).add(PongUtils.fromAngle(angle).multiply(totalDist/numSegments/2));
             //double velAngle = Math.atan2(focus.getY()-center.getY(),focus.getX()-center.getX()) + Math.PI/2;
 
-            particles.add(new Particle(center,PongUtils.fromAngle(angle).multiply(0.5*Math.random()*10/focus.distance(center)),angle-Math.PI/2,totalDist/numSegments,10000,System.currentTimeMillis(),0.5*Math.random()*5/focus.distance(center) ));
+            particles.add(new Particle(center,PongUtils.fromAngle(angle).multiply(1.2+Math.random()*16/(focus.distance(center)-GameLoop.ballRadius/2)),angle-Math.PI/2,totalDist/numSegments,3000,System.currentTimeMillis(),(Math.random()-0.5)*5/focus.distance(center) ));
         }
     }
 
@@ -159,12 +160,30 @@ public class Camera {
 
     public void drawAngleDisplay(double angle) {
 
+        double angleDiff = Math.PI/4;
+
         Point2D center = transPt(this.center);
 
+        double a1 = angle - angleDiff/2;
+        double a2 = angle + angleDiff/2;
+
+        Point2D pt2 = (PongUtils.fromAngle(a1).multiply(GameLoop.ballRadius*1.5));
+        Point2D pt1 = (PongUtils.fromAngle(a2).multiply(GameLoop.ballRadius*1.5));
+
+        Point2D pt4 = (PongUtils.fromAngle(a1).multiply(GameLoop.ballRadius*2));
+        Point2D pt3 = (PongUtils.fromAngle(a2).multiply(GameLoop.ballRadius*2));
+
         gc.beginPath();
-        gc.arc(center.getX(),center.getY(),GameLoop.ballRadius*scale*1.5,GameLoop.ballRadius*scale*1.5,Math.toDegrees(angle-this.rotation),100*scale);
+      // gc.arc(center.getX(),center.getY(),GameLoop.ballRadius*scale*1.5,GameLoop.ballRadius*scale*1.5,Math.toDegrees(angle-this.rotation),100*scale);
+
+        gc.arcTo(pt1.getX(),pt1.getY(),pt2.getX(),pt2.getY(),GameLoop.ballRadius*1.5);
+        gc.arcTo(pt3.getX(),pt1.getY(),pt4.getX(),pt2.getY(),GameLoop.ballRadius*2);
+
+        //System.out.println(pt1);
         gc.closePath();
         gc.stroke();
+
+
     }
 
     public void setCenter(Point2D center) {

@@ -26,7 +26,9 @@ public class Point2D implements Serializable {
     public double distance(Point2D pt) {
         return Math.sqrt(Math.pow(x-pt.getX(),2) + Math.pow(y-pt.getY(),2));
     }
-
+    public double getMagnitude () {
+        return Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
+    }
     public double getX() {
         return x;
     }
