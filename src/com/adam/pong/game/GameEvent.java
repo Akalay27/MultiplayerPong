@@ -1,5 +1,0 @@
-package com.adam.pong.game;
-
-public enum GameEvent {
-    STOPGAME, STARTGAME, REORGANIZE_PLAYERS, REORGANIZE_PLAYERS_FANCY, ESTABLISHED_CONNECTION, NONE
-}

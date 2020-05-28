@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="GameTest" type="CompoundRunConfigurationType">
-    <toRun name="Game" type="Application" />
-    <toRun name="multiplayerTesting" type="Application" />
-    <method v="2" />
-  </configuration>
-</component>
