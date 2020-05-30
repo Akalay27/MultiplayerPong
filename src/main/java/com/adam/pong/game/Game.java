@@ -2,50 +2,48 @@ package com.adam.pong.game;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.effect.GaussianBlur;
-import javafx.scene.effect.MotionBlur;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
+import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
-import javafx.scene.paint.Color;
-
-import javax.swing.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Objects;
 
 public class Game extends Application {
     private PongClient client;
+    private PongServer server;
+    private CPPongClient cpuClients[];
+    private Stage primaryStage;
     private UserInput userInput;
     private GraphicsContext gc;
     private ResizableCanvas canvas;
+    private boolean showPlayerNames;
+    private final int menuWidth = 800;
+    private final int menuHeight = 800;
+    private AnimationTimer animator;
+    private Scene mainMenu;
 
+    private boolean isQuitting = false;
+    private double quitTimer = 0;
     public static void main(String[] args) {
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws IOException {
-        //getByName("107.129.94.149")
-
+        this.primaryStage = primaryStage;
         /* Game Scene */
         primaryStage.setTitle("PolyPong");
 
@@ -63,6 +61,20 @@ public class Game extends Application {
             if (ke.getCode() == KeyCode.RIGHT) {
                 userInput = UserInput.RIGHT;
             }
+            if (ke.getCode() == KeyCode.DOWN) {
+                userInput = UserInput.LEFT;
+            }
+            if (ke.getCode() == KeyCode.UP) {
+                userInput = UserInput.RIGHT;
+            }
+            if (ke.getCode() == KeyCode.CONTROL) {
+                showPlayerNames = true;
+            }
+
+            if (ke.getCode() == KeyCode.ESCAPE) {
+                if (!isQuitting) quitTimer = System.currentTimeMillis();
+                isQuitting = true;
+            }
         });
         gameScene.setOnKeyReleased(ke -> {
             if (ke.getCode() == KeyCode.LEFT && userInput == UserInput.LEFT) {
@@ -70,6 +82,18 @@ public class Game extends Application {
             }
             if (ke.getCode() == KeyCode.RIGHT && userInput == UserInput.RIGHT) {
                 userInput = UserInput.NONE;
+            }
+            if (ke.getCode() == KeyCode.DOWN && userInput == UserInput.LEFT) {
+                userInput = UserInput.NONE;
+            }
+            if (ke.getCode() == KeyCode.UP && userInput == UserInput.RIGHT) {
+                userInput = UserInput.NONE;
+            }
+            if (ke.getCode() == KeyCode.CONTROL) {
+                showPlayerNames = false;
+            }
+            if (ke.getCode() == KeyCode.ESCAPE) {
+                isQuitting = false;
             }
         });
 
@@ -79,9 +103,13 @@ public class Game extends Application {
         spOptions.setAlignment(Pos.CENTER);
         playerAmount.setAlignment(Pos.CENTER);
         TextField numPlayers = new TextField("");
+        numPlayers.setId("numplayers");
         playerAmount.add(new Label("Number of Players: "), 1, 0);
         playerAmount.add(numPlayers, 2, 0);
         Button playButton = new Button("Start!");
+        Button spToMain = new Button("Back to Menu");
+        spToMain.setId("back-button");
+        spToMain.setOnAction(e -> primaryStage.setScene(mainMenu));
         playButton.setOnAction(e -> {
             try {
                 createSinglePlayerGame(Integer.parseInt(numPlayers.getCharacters().toString()),false);
@@ -92,9 +120,100 @@ public class Game extends Application {
                 socketException.printStackTrace();
             }
         });
-        spOptions.getChildren().addAll(playerAmount,playButton);
-        Scene singlePlayerOptions = new Scene(spOptions, 1000,1000);
+        spOptions.getChildren().addAll(playerAmount,playButton, spToMain);
+        Scene singlePlayerOptions = new Scene(spOptions, menuWidth, menuHeight);
         singlePlayerOptions.getStylesheets().add("menuStyle.css");
+
+        /* Multiplayer Options Select Scene */
+        VBox mpOptions = new VBox(10);
+        GridPane ipPortName = new GridPane();
+        mpOptions.setAlignment(Pos.CENTER);
+        ipPortName.setAlignment(Pos.CENTER);
+        TextField ip = new TextField("");
+        TextField port = new TextField("");
+        TextField name = new TextField("");
+        ipPortName.add(new Label("Server IP:"), 1, 0);
+        ipPortName.add(ip, 2, 0);
+        ipPortName.add(new Label("Server Port:"), 1, 1);
+        ipPortName.add(port, 2, 1);
+        ipPortName.add(new Label("Player Name:"), 1, 2);
+        ipPortName.add(name, 2, 2);
+        Button joinButton = new Button("Join Game!");
+        Button mpToMain = new Button("Back to Menu");
+        mpToMain.setId("back-button");
+        mpToMain.setOnAction(e -> primaryStage.setScene(mainMenu));
+
+        joinButton.setOnAction(e -> {
+            try {
+                joinMultiPlayerGame(name.getCharacters().toString(),ip.getCharacters().toString(),port.getCharacters().toString());
+                primaryStage.setScene(gameScene);
+                primaryStage.setMaximized(true);
+                startGame();
+            } catch (UnknownHostException | SocketException unknownHostException) {
+                unknownHostException.printStackTrace();
+            }
+        });
+
+        mpOptions.getChildren().addAll(ipPortName,joinButton,mpToMain);
+        Scene multiPlayerOptions = new Scene(mpOptions, menuWidth, menuHeight);
+        multiPlayerOptions.getStylesheets().add("menuStyle.css");
+
+        /* How to Play Scene */
+        VBox textinfo = new VBox();
+        textinfo.maxWidth(menuWidth*0.8);
+        textinfo.fillWidthProperty();
+        textinfo.setAlignment(Pos.CENTER);
+
+        Text basicInfo = new Text("Welcome to PolyPong! \n" +
+                "In PolyPong, you face a number of opponents in a polygonal shape and attempt to knock the ball into one of the opponents' bounds. \n" +
+                "Your paddle will always be on the bottom of the screen, and on the right side of the screen on the last round.\n"
+                );
+
+        HBox ks1 = new HBox();
+        Label ks1Label = new Label(" \uD83E\uDC1C ");
+        Text ks1Text = new Text("Paddle Left ");
+        ks1Label.setId("hotkey");
+        ks1Text.setId("hotkey-text");
+        Label ks2Label = new Label(" \uD83E\uDC1E ");
+        Text ks2Text = new Text("Paddle Right ");
+        ks2Label.setId("hotkey");
+        ks2Text.setId("hotkey-text");
+        ks1.getChildren().addAll(ks1Label,ks1Text, ks2Label, ks2Text);
+        ks1.setAlignment(Pos.CENTER);
+        ks1.setSpacing(10);
+        ks1.setMaxWidth(menuWidth*0.8);
+
+        HBox ks3 = new HBox();
+        Label ks3Label = new Label(" CTRL ");
+        Text ks3Text = new Text("Show Player Names");
+        ks3Label.setId("hotkey");
+        ks3Text.setId("hotkey-text");
+        ks3.getChildren().addAll(ks3Label,ks3Text);
+        ks3.setAlignment(Pos.CENTER);
+        ks3.setSpacing(10);
+        ks3.setMaxWidth(menuWidth*0.8);
+
+        HBox ks4 = new HBox();
+        Label ks4Label = new Label(" Hold ESC ");
+        Text ks4Text = new Text("Back to Menu");
+        ks4Label.setId("hotkey");
+        ks4Text.setId("hotkey-text");
+        ks4.getChildren().addAll(ks4Label,ks4Text);
+        ks4.setAlignment(Pos.CENTER);
+        ks4.setSpacing(10);
+        ks4.setMaxWidth(menuWidth*0.8);
+
+        basicInfo.setTextAlignment(TextAlignment.CENTER);
+        basicInfo.setWrappingWidth(menuWidth*0.8);
+        basicInfo.setId("instructions");
+        textinfo.setSpacing(10);
+        Button instToMain = new Button("Back to Menu");
+        instToMain.setId("back-button");
+        instToMain.setOnAction(e -> primaryStage.setScene(mainMenu));
+        textinfo.getChildren().addAll(basicInfo,ks1,ks3,ks4,instToMain);
+        Scene instructions = new Scene(textinfo, menuWidth, menuHeight);
+        instructions.getStylesheets().add("menuStyle.css");
+
 
         /* Main Menu Scene */
         Button singlePlayer = new Button("Singleplayer");
@@ -102,31 +221,37 @@ public class Game extends Application {
             primaryStage.setScene(singlePlayerOptions);
         });
         Button multiPlayer = new Button("Multiplayer");
+        multiPlayer.setOnAction(e -> {
+            primaryStage.setScene(multiPlayerOptions);
+        });
         Button howToPlay = new Button("How to Play");
+        howToPlay.setOnAction(e -> {
+            primaryStage.setScene(instructions);
+        });
         VBox menuButtons = new VBox(8);
         menuButtons.setAlignment(Pos.CENTER);
         menuButtons.getChildren().addAll(singlePlayer,multiPlayer,howToPlay);
-        Scene mainMenu = new Scene(menuButtons, 1000,1000);
+        mainMenu = new Scene(menuButtons, menuWidth, menuHeight);
         mainMenu.getStylesheets().add("menuStyle.css");
         primaryStage.setScene(mainMenu);
         primaryStage.show();
-
-//
-//        client = new PongClient("adam", InetAddress.getByName("localhost").getAddress(), 25565);
-//        client.connectToServer();
-
-        //startGame();
-
     }
 
+    private void joinMultiPlayerGame(String name, String ip, String port) throws UnknownHostException, SocketException {
+        byte[] address = InetAddress.getByName(ip).getAddress();
+        int serverPort = Integer.parseInt(port);
+        client = new PongClient(name,address,serverPort);
+        client.connectToServer();
+    }
     private void createSinglePlayerGame(int numPlayers, boolean isLocalhost) throws SocketException, UnknownHostException {
 
-        PongServer server = new PongServer();
+        server = new PongServer();
         server.start();
-
+        cpuClients = new CPPongClient[numPlayers-1];
         for (int p = 0; p < numPlayers-1; p++) {
             CPPongClient cpuClient = new CPPongClient("cpuClient"+p,InetAddress.getLocalHost().getAddress(),25565);
             cpuClient.start();
+            cpuClients[p] = cpuClient;
         }
 
         client = new PongClient("Player", InetAddress.getLocalHost().getAddress(), 25565);
@@ -138,15 +263,12 @@ public class Game extends Application {
         Camera camera = new Camera(gc);
         gc.setTextAlign(TextAlignment.CENTER);
 
-        AnimationTimer animator = new AnimationTimer() {
+        animator = new AnimationTimer() {
 
             @Override
             public void handle(long arg0) {
 
-//                gc.setGlobalAlpha(0.3);
                 gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-//                gc.setFill(Color.WHITE);
-//                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
                 try {
                     client.update(userInput);
@@ -157,6 +279,9 @@ public class Game extends Application {
                 camera.setTransform(client.getPlayers(), client.getPlayerId());
                 for (Player p : client.getPlayers()) {
                     camera.drawPlayer(p);
+
+                    if (showPlayerNames)
+                        camera.drawPlayerName(p);
                 }
 
 
@@ -172,26 +297,44 @@ public class Game extends Application {
                         camera.drawShatteredLine(bounds.pt1, bounds.pt2, ((DeathEvent) e).getFocus());
                     }
                     if (e instanceof ChatEvent) {
-                        System.out.println(((ChatEvent) e).getMessage());
+                        camera.addChatMessage(((ChatEvent) e).getMessage());
                     }
+                    if (e instanceof DirectionIndicatorEvent) {
+                        camera.setAngleDisplayTimer(e.getInitTime());
+                        camera.setBallAngles(((DirectionIndicatorEvent) e).getFinalAngle(),((DirectionIndicatorEvent) e).getStartAngle());
+                    }
+
                     client.removeGraphicsEventFromPending(e.getUUID());
                 }
                 camera.drawMessage(client.getMessage());
                 camera.drawParticles();
                 camera.moveParticles();
+                camera.drawChat();
+                camera.updateChatMessages();
+                camera.drawAngleDisplay();
+
+                if (isQuitting && System.currentTimeMillis() - quitTimer > 3000) {
+                    isQuitting = false;
+                    backToMainMenu();
+                }
+
             }
         };
         animator.start();
     }
 
-    private String getOtherInfo(String key) {
-        if (client.getOtherInfo() != null) {
-            for (String s : client.getOtherInfo()) {
-                if (s.substring(0, s.indexOf("=")).equals(key)) {
-                    return s.substring(s.indexOf("=") + 1);
-                }
-            }
-        }
-        return null;
+    private void backToMainMenu() {
+        primaryStage.setScene(mainMenu);
+        if (cpuClients != null)
+            for (CPPongClient cl : cpuClients) cl.setRunning(false);
+        if (animator != null) animator.stop();
+        if (client != null) client.close();
+        if (server != null) server.close();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        backToMainMenu();
+        super.stop();
     }
 }

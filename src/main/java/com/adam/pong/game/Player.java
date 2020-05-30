@@ -6,7 +6,7 @@ import java.io.Serializable;
 public class Player implements Serializable {
 
     public enum State {
-        INGAME, ELIMINATED, DEATH, JOINED
+        INGAME, ELIMINATED, DEATH, JOINED, DISCONNECTED;
     }
     private int id;
     private String name;
@@ -16,6 +16,7 @@ public class Player implements Serializable {
     private UserInput input;
     private Color color;
     private State state;
+    private double lastPacketTime;
 
     public Player(int id, String name, Color color) {
         this.id = id;
@@ -23,6 +24,15 @@ public class Player implements Serializable {
         this.position = 0.5;
         this.color = color;
         this.state = State.JOINED;
+        updatePacketTime();
+    }
+
+    public void updatePacketTime() {
+        lastPacketTime = System.currentTimeMillis();
+    }
+
+    public double getLastPacketTime() {
+        return lastPacketTime;
     }
 
     public PlayerBounds getPlayerBounds() {

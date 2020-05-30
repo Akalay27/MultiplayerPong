@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import org.apache.commons.lang3.SerializationUtils;
-import java.util.Dictionary;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -63,7 +63,6 @@ public class PongServer extends Thread {
             if (playerState.id == -1) {
                 Player newPlayer = createPlayerFromNewConnection(playerState);
                 players.add(newPlayer);
-                System.out.println(playerState.name + " joined the game.");
                 buf = SerializationUtils.serialize(newPlayer);
 
             } else {
@@ -72,6 +71,7 @@ public class PongServer extends Thread {
                 for (Player p : players) {
                     if (playerState.id == p.getId()) {
                         p.setInput(playerState.input);
+                        p.updatePacketTime();
                     }
                 }
 
@@ -97,6 +97,7 @@ public class PongServer extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            Thread.yield();
 
         }
     }
@@ -115,6 +116,14 @@ public class PongServer extends Thread {
         }
 
         return cPlayers;
+    }
+
+
+    public void close() {
+        gameLoop.setRunning(false);
+        gameManager.setRunning(false);
+        socket.close();
+        running = false;
     }
 
 

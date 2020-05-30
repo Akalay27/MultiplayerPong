@@ -32,7 +32,6 @@ public class Point2D implements Serializable {
     public double getX() {
         return x;
     }
-
     public double getY() {
         return y;
     }

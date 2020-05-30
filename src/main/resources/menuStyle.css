@@ -18,9 +18,36 @@
 
 .text-field {
     -fx-background-color: -fx-text-box-border, -fx-background ;
-    -fx-background-insets: 0, 0 0 0 0 ;
+    -fx-background-insets: 0, 0 0 3 0 ;
     -fx-background-radius: 0 ;
     -fx-font-size: 30;
     -fx-padding: 0 0 0 0;
-    -fx-max-width: 50
+}
+
+#numplayers {
+    -fx-max-width: 50;
+}
+
+#back-button {
+    -fx-font-size: 20;
+    -fx-max-width: 200;
+}
+
+#instructions {
+    -fx-font-size: 20;
+
+}
+
+#hotkey {
+    -fx-background-color: -fx-text-box-border, -fx-background ;
+    -fx-background-insets: 0, 3 3 3 3 ;
+    -fx-text-fill: black;
+}
+
+#hotkey-text {
+     -fx-font-size: 20;
+}
+
+.hbox {
+    -fx-spacing: 10;
 }

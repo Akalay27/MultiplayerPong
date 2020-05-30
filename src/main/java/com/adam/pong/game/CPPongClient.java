@@ -8,14 +8,14 @@ import java.net.UnknownHostException;
 
 public class CPPongClient extends PongClient {
 
+    private final int TARGET_FPS = 60;
     private boolean running = false;
     private double distanceTolerance;
     private long lastLoopTime;
-    private final int TARGET_FPS = 120;
 
 
-    public CPPongClient (String name, byte[] address, int port) throws SocketException, UnknownHostException {
-        super(name,address, port);
+    public CPPongClient(String name, byte[] address, int port) throws SocketException, UnknownHostException {
+        super(name, address, port);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class CPPongClient extends PongClient {
             PlayerBounds bounds = null;
             UserInput userInput = UserInput.NONE;
 
-            lastLoopTime = System.nanoTime();
+            lastLoopTime = System.currentTimeMillis();
             for (int p = 0; p < players.length; p++) {
                 if (players[p].getId() == id) {
                     paddle = players[p].getPaddle();
@@ -68,26 +68,23 @@ public class CPPongClient extends PongClient {
                 e.printStackTrace();
             }
 
+            try {
+                long duration = (long) ((lastLoopTime - System.currentTimeMillis()) + (1000.0 / TARGET_FPS));
+                Thread.sleep((duration >= 0) ? duration : 0);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-
-
-
-//            try{
-//                long duration = (long) ((lastLoopTime - System.nanoTime()) + (1000.0 / TARGET_FPS));
-//                System.out.println(duration);
-//                Thread.sleep((duration >= 0) ? duration : 0);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            };
         }
-
-
 
     }
 
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
 
     public void setDistanceTolerance() {
-        distanceTolerance = Math.random()*GameLoop.paddleWidth/3;
+        distanceTolerance = Math.random() * GameLoop.paddleWidth / 3 + GameLoop.paddleWidth / 12;
     }
 
 

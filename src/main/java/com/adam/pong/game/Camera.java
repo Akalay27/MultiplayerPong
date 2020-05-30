@@ -3,8 +3,12 @@ package com.adam.pong.game;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
+import org.apache.commons.lang3.ArrayUtils;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,13 +19,18 @@ public class Camera {
     private Point2D center;
     private double rotation = 0;
     private double scale = 1;
-    private ArrayList<Particle> particles;
+    private final ArrayList<Particle> particles;
     private double angleDisplayTimer;
+    private double startAngle;
+    private double finalAngle;
+    private final ArrayList<ChatMessage> chatMessages;
+    private boolean showPlayerNames = false;
 
     public Camera (GraphicsContext gc) {
         this.gc = gc;
         center = new Point2D(0,0);
         particles = new ArrayList<>();
+        chatMessages = new ArrayList<>();
     }
 
     public void drawPlayer(Player player) {
@@ -70,18 +79,21 @@ public class Camera {
 
                 if (players[p].getId() == focusedId) {
                     if (players.length == 2 && p == 1) offsetFor2P = -Math.PI;
-                    rotation = PongUtils.lerp(rotation, -Math.PI * 2 / players.length / 2 * (1 + 2 * p) - Math.PI / 2 + offsetFor2P, 0.3);
+                    rotation = PongUtils.lerp(rotation, -Math.PI * 2 / players.length / 2 * (1 + 2 * p) - Math.PI / 2 + offsetFor2P, 0.3); // FIX FIX FIX FIX FIX
                     foundPlayer = true;
                 }
             }
         }
-        if (!foundPlayer) rotation = PongUtils.lerp(rotation,0,1);
+        if (!foundPlayer) {
+            rotation = rotation % (Math.PI*2);
+            rotation = PongUtils.lerp(rotation,0,0.1);
+        }
 
         double minY = Collections.min(boundsYValues);
         double maxY = Collections.max(boundsYValues);
 
         double cvsHeight = gc.getCanvas().getHeight();
-        scale = PongUtils.lerp(scale,cvsHeight/(maxY-minY)*0.9,0.3);
+        scale = PongUtils.lerp(scale,cvsHeight/(maxY-minY)*0.93,0.3);
 
     }
     public void drawPoints(Point2D[] points,double size) {
@@ -96,35 +108,37 @@ public class Camera {
         gc.setFill(Color.WHITE);
         gc.setFont(new Font(null,scale*20));
         gc.setTextBaseline(VPos.CENTER);
+        gc.setTextAlign(TextAlignment.CENTER);
         Point2D textPos = transPt(new Point2D(0,0),false);
         gc.fillText(message,textPos.getX(),textPos.getY());
     }
 
-    public void drawPlayerName(Player player, double opacity) {
+    public void drawPlayerName(Player player) {
         gc.save();
-        gc.setFont(new Font(null,scale*10));
+        gc.setFont(new Font(null, scale * 10));
         gc.setFill(Color.BLACK);
+        gc.setTextAlign(TextAlignment.CENTER);
         Paddle paddle = player.getPaddle();
         Point2D boundsPt1 = transPt(paddle.pt2);
         Point2D boundsPt2 = transPt(paddle.pt3);
 
-        double angle = Math.atan2(boundsPt1.getY()-boundsPt2.getY(),boundsPt1.getX()-boundsPt2.getX()) + Math.PI;
-        if (angle >= Math.PI/2 && angle <= Math.PI*3/2) {
-            angle+=Math.PI;
+        double angle = Math.atan2(boundsPt1.getY() - boundsPt2.getY(), boundsPt1.getX() - boundsPt2.getX()) + Math.PI;
+        if (angle >= Math.PI / 2 && angle <= Math.PI * 3 / 2) {
+            angle += Math.PI;
             gc.setTextBaseline(VPos.BOTTOM);
         } else {
             gc.setTextBaseline(VPos.TOP);
         }
-        gc.setGlobalAlpha(opacity);
 
-        Point2D midpoint = PongUtils.lerp(boundsPt1,boundsPt2,0.5);
+        Point2D midpoint = PongUtils.lerp(boundsPt1, boundsPt2, 0.5);
 
-        gc.translate(midpoint.getX(),midpoint.getY());
+        gc.translate(midpoint.getX(), midpoint.getY());
         gc.rotate(Math.toDegrees(angle));
 
 
-        gc.fillText(player.getName(),0,0);
+        gc.fillText(player.getName(), 0, 0);
         gc.restore();
+
     }
 
     public void drawShatteredLine(Point2D pt1, Point2D pt2, Point2D focus) {
@@ -158,32 +172,40 @@ public class Camera {
         }
     }
 
-    public void drawAngleDisplay(double angle) {
+    public void drawAngleDisplay() {
 
-        double angleDiff = Math.PI/4;
+        if (System.currentTimeMillis() - angleDisplayTimer < 4000) {
 
-        Point2D center = transPt(this.center);
+            double tempTimer = (System.currentTimeMillis() - angleDisplayTimer) / 3000;
 
-        double a1 = angle - angleDiff/2;
-        double a2 = angle + angleDiff/2;
+            tempTimer = (tempTimer >= 1) ? 1 : tempTimer;
 
-        Point2D pt2 = (PongUtils.fromAngle(a1).multiply(GameLoop.ballRadius*1.5));
-        Point2D pt1 = (PongUtils.fromAngle(a2).multiply(GameLoop.ballRadius*1.5));
+            double angle = Math.sin(tempTimer * Math.PI / 2)*(finalAngle-startAngle) + startAngle;
 
-        Point2D pt4 = (PongUtils.fromAngle(a1).multiply(GameLoop.ballRadius*2));
-        Point2D pt3 = (PongUtils.fromAngle(a2).multiply(GameLoop.ballRadius*2));
+            double radius = GameLoop.ballRadius * 1.2;
+            double angleDiff = Math.PI / 2;
 
-        gc.beginPath();
-      // gc.arc(center.getX(),center.getY(),GameLoop.ballRadius*scale*1.5,GameLoop.ballRadius*scale*1.5,Math.toDegrees(angle-this.rotation),100*scale);
+            Point2D center = transPt(this.center);
 
-        gc.arcTo(pt1.getX(),pt1.getY(),pt2.getX(),pt2.getY(),GameLoop.ballRadius*1.5);
-        gc.arcTo(pt3.getX(),pt1.getY(),pt4.getX(),pt2.getY(),GameLoop.ballRadius*2);
+            double a1 = angle - angleDiff / 2;
+            double a2 = angle + angleDiff / 2;
 
-        //System.out.println(pt1);
-        gc.closePath();
-        gc.stroke();
+            int resolution = 30;
+            ArrayList<Double> xPts = new ArrayList<>();
+            ArrayList<Double> yPts = new ArrayList<>();
 
 
+            for (double a = a1; a <= a2; a += (a2 - a1) / (resolution)) {
+                Point2D pt = transPt(PongUtils.fromAngle(a).multiply(radius));
+                xPts.add(pt.getX());
+                yPts.add(pt.getY());
+            }
+            gc.save();
+            gc.setLineWidth(3*scale);
+            gc.setLineCap(StrokeLineCap.ROUND);
+            gc.strokePolyline(ArrayUtils.toPrimitive(xPts.toArray(new Double[0])),ArrayUtils.toPrimitive(yPts.toArray(new Double[0])),xPts.size());
+            gc.restore();
+        }
     }
 
     public void setCenter(Point2D center) {
@@ -200,5 +222,35 @@ public class Camera {
 
     public void setAngleDisplayTimer(double angleDisplayTimer) {
         this.angleDisplayTimer = angleDisplayTimer;
+    }
+
+    public void addChatMessage(String message) {
+       chatMessages.add(new ChatMessage(message));
+    }
+
+    public void drawChat() {
+
+        double xPos = gc.getCanvas().getWidth()-20;
+        gc.setFont(new Font("",27));
+        gc.setTextAlign(TextAlignment.RIGHT);
+        gc.setFill(Color.BLACK);
+        for (int c = 0; c < chatMessages.size(); c++) {
+            double yPos = c*35+30;
+            double alpha = (System.currentTimeMillis()-chatMessages.get(c).getCreationTime()) / 500.0;
+            alpha = (alpha >= 1) ? 1 : alpha;
+            double disappearAlpha = (System.currentTimeMillis()-chatMessages.get(c).getCreationTime()-6500) / 1500.0;
+            disappearAlpha = (disappearAlpha <= 0) ? 0 : disappearAlpha;
+            gc.setGlobalAlpha(alpha-disappearAlpha);
+            gc.fillText(chatMessages.get(c).getMessage(),xPos,yPos);
+            gc.setGlobalAlpha(1);
+        }
+    }
+    public void updateChatMessages() {
+        chatMessages.removeIf(e -> (System.currentTimeMillis() - e.getCreationTime() >= 8000));
+    }
+
+    public void setBallAngles(double finalAngle, double startAngle) {
+        this.startAngle = startAngle;
+        this.finalAngle = finalAngle;
     }
 }

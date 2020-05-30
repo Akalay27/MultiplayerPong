@@ -31,84 +31,98 @@ public class GameManager extends Thread {
     public void run() {
         running = true;
         boolean useAnimatedBounds = false;
-        while (running) {
 
+        while (running) {
 
             if (reviveAll) {
                 for (Player p : players) {
-                    if (p.getState() == Player.State.JOINED) {
-                        graphicsEvents.add(new ChatEvent(p.getName() + " joined the game."));
-                    }
                     p.setState(Player.State.INGAME);
                 }
-                reviveAll = false;
             }
             startBoundsAnimation();
             boolean waiting = true;
+            gameLoop.setPhysicsRunning(false);
             gameLoop.resetBall();
 
             final int TARGET_FPS = 60;
             final long OPTIMAL_TIME = 1000000000 / TARGET_FPS;
             long lastLoopTime = System.nanoTime();
 
-            while (waiting) {
+            while (waiting && running) {
 
                 long now = System.nanoTime();
                 long updateLength = now - lastLoopTime;
                 double timeDelta = updateLength / ((double) (OPTIMAL_TIME));
                 lastLoopTime = now;
+                if (reviveAll) {
+                    for (Player p : players) {
+                        p.setState(Player.State.INGAME);
+                    }
 
+                }
                 if (!gameInProgress && players.size() >= minPlayersToStart) {
                     timer = System.currentTimeMillis();
                     gameInProgress = true;
+
+                    double ballAngle = gameLoop.getStartAngle();
+                    graphicsEvents.add(new DirectionIndicatorEvent(ballAngle, ballAngle+(Math.signum(Math.random()-0.5)*(Math.PI*3*(Math.random()* 0.3 + 0.7)))));
                 }
 
                 if (gameInProgress && System.currentTimeMillis() - timer < countdownTime) {
-                    message = "" + ( (int)((countdownTime / 1000 - (System.currentTimeMillis() - timer) / 1000))+1) + "?sr="+gameLoop.getStartAngle();
-                    gameLoop.setRunning(false);
+                    message = "" + ( (int)((countdownTime / 1000 - (System.currentTimeMillis() - timer) / 1000))+1);
+                    gameLoop.setPhysicsRunning(false);
+
+
                 }
 
                 if (gameInProgress && System.currentTimeMillis() - timer >= countdownTime) {
                     waiting = false;
                     message = "";
-                    gameLoop.setRunning(true);
+                    gameLoop.setPhysicsRunning(true);
                 }
 
 
                 createNewBounds(useAnimatedBounds);
                 boundsAnimationTimer+=0.05*timeDelta;
+                updateEventList();
+                Thread.yield();
             }
+            if (reviveAll)
+                reviveAll = false;
             useAnimatedBounds = true;
 
 
             //gameLoop.resetBall();
-            while (gameInProgress) {
+            while (gameInProgress && running) {
 
-                if (currentPlayers().size() < 2) {
-                    gameInProgress = false;
-                    gameLoop.setRunning(false);
-                    reviveAll = true;
 
-                    timer = System.currentTimeMillis();
-                }
                 for (Player p : players) {
                     if (p.getState() == Player.State.DEATH) {
 
                         p.setState(Player.State.ELIMINATED);
 
-                        gameLoop.setRunning(false);
+                        gameLoop.setPhysicsRunning(false);
                         graphicsEvents.add(new DeathEvent(p.getPlayerBounds(),gameLoop.getBallPosition()));
                         graphicsEvents.add(new ChatEvent(p.getName() + " is out!"));
                         gameLoop.resetBall();
                         startBoundsAnimation();
-                        gameLoop.setRunning(true);
+                        gameLoop.setPhysicsRunning(true);
                         timer = System.currentTimeMillis();
                         gameInProgress = false;
 
                         break;
                     }
                 }
+                updateEventList();
             }
+            if (currentPlayers().size() < 2) {
+                gameInProgress = false;
+                gameLoop.setPhysicsRunning(false);
+                reviveAll = true;
+                graphicsEvents.add(new ChatEvent(currentPlayers().get(0).getName() + " WINS!!!"));
+                timer = System.currentTimeMillis();
+            }
+            Thread.yield();
         }
     }
 
@@ -194,8 +208,9 @@ public class GameManager extends Thread {
             }
         } else if (cPlayers.size() == 2) {
             double arenaScale = 4;
-            PlayerBounds left = new PlayerBounds(new Point2D(radius * arenaScale, -radius / 2 * arenaScale), new Point2D(radius * arenaScale, radius / 2 * arenaScale));
-            PlayerBounds right = new PlayerBounds(new Point2D(-radius * arenaScale, radius / 2 * arenaScale), new Point2D(-radius * arenaScale, -radius / 2 * arenaScale));
+            double aspectRatio = 1.78/2;
+            PlayerBounds left = new PlayerBounds(new Point2D(radius * aspectRatio * arenaScale, -radius/2 * arenaScale), new Point2D(radius * aspectRatio * arenaScale, radius / 2 * arenaScale));
+            PlayerBounds right = new PlayerBounds(new Point2D(-radius * aspectRatio * arenaScale, radius  / 2 * arenaScale), new Point2D(-radius * aspectRatio * arenaScale, -radius / 2 * arenaScale));
             bounds[0] = left;
             bounds[1] = right;
             gameLoop.setInvisibleBounds(radius / 2 * arenaScale);
@@ -224,9 +239,30 @@ public class GameManager extends Thread {
         }
     }
 
-    public GraphicsEvent[] getGraphicsEvents() {
+    public void updateEventList() {
+
         graphicsEvents.removeIf(e -> (System.currentTimeMillis() - e.getInitTime() >= 5000));
+        for (Player p : players) {
+            if (p.getState() == Player.State.JOINED) {
+                graphicsEvents.add(new ChatEvent(p.getName() + " joined the game."));
+                p.setState(Player.State.ELIMINATED);
+                System.out.println(p.getName() + " joined the game.");
+            }
+            if (System.currentTimeMillis() - p.getLastPacketTime() >= 2000) {
+                graphicsEvents.add(new ChatEvent(p.getName() + " left the game."));
+                System.out.println(p.getName() + " left the game.");
+                players.remove(p);
+            }
+        }
+
+    }
+
+    public GraphicsEvent[] getGraphicsEvents() {
         return graphicsEvents.toArray(new GraphicsEvent[0]);
+    }
+
+    public void setRunning(boolean running) {
+        this.running = running;
     }
 }
 

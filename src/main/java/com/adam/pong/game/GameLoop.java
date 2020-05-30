@@ -17,6 +17,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameLoop extends Thread {
 
+    private boolean physicsRunning;
     private boolean running;
     private List<Player> players;
     private Ball ball;
@@ -26,6 +27,7 @@ public class GameLoop extends Thread {
     public static double ballRadius = 15;
     private double invisibleBounds = -1;
     private double ballSpeed = 7;
+    private double lastTouchedId = -1;
     private Point2D[] debugPoints = null;
 
 
@@ -35,32 +37,38 @@ public class GameLoop extends Thread {
 
     }
     public void run() {
-
         running = true;
+        physicsRunning = true;
 
         final int TARGET_FPS = 60;
         final long OPTIMAL_TIME = 1000000000 / TARGET_FPS;
         long lastLoopTime = System.nanoTime();
 
-        while (true) {
+        while (running) {
             long now = System.nanoTime();
+            long loopTimeMillis = System.currentTimeMillis();
             long updateLength = now - lastLoopTime;
             double timeDelta = updateLength / ((double) (OPTIMAL_TIME));
             lastLoopTime = now;
-            if (running) {
+            if (physicsRunning) {
                 ball.move(timeDelta);
                 checkCollisions();
+            } else {
+                lastTouchedId = -1;
             }
             updatePlayerPositions(timeDelta);
             createPaddleCoordinates();
             //System.out.println("I am currently dealing with " + players.size() + " players!");
 
             // do I need to actually sleep the thread if we already have a deltatime value?
-//            try{
-//                Thread.sleep( (lastLoopTime-System.nanoTime() + OPTIMAL_TIME)/1000000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            };
+            Thread.yield();
+          try{
+                long duration = (long) ((loopTimeMillis - System.currentTimeMillis()) + (1000.0 / 200));
+                System.out.println(duration);
+                Thread.sleep((duration >= 0) ? duration : 0);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            };
         }
     }
     /* for each player, use bounds and position to create the paddle coordinates */
@@ -127,12 +135,13 @@ public class GameLoop extends Thread {
                 Point2D collisionPt = ball.checkCollision(paddle.pt1,paddle.pt4);
 
                 if (ballPos.distance(collisionPt) < ball.getRadius()) {
-                    if (PongUtils.isPointOnSegment(paddle.pt1,paddle.pt4,collisionPt,0.001)) {
+                    if (PongUtils.isPointOnSegment(paddle.pt1,paddle.pt4,collisionPt,0.001) && p.getId() != lastTouchedId) {
 
                         Point2D paddleCenter = paddle.getCenter();
                         double angleToCenter = Math.atan2(ballPos.getY()-paddleCenter.getY(),ballPos.getX()-paddleCenter.getX());
                         ball.setDirection(angleToCenter);
                         ball.setVelocity(ball.getVelocity().add(ball.getVelocity().multiply(1/ball.getVelocity().getMagnitude()*0.3)));
+                        lastTouchedId = p.getId();
                     }
                 Point2D boundsCollisionPt = ball.checkCollision(p.getPlayerBounds().pt1, p.getPlayerBounds().pt2);
                 if (ballPos.distance(boundsCollisionPt) < ball.getRadius()) {
@@ -149,10 +158,15 @@ public class GameLoop extends Thread {
 
         if (invisibleBounds >= 0) {
             double radius = ball.getRadius();
-            if (ballPos.getY() - radius < -invisibleBounds || ballPos.getY() + radius > invisibleBounds) {
+            if (ballPos.getY() - radius < -invisibleBounds && lastTouchedId != -2) {
                 Point2D vel = ball.getVelocity();
                 ball.setVelocity(new Point2D(vel.getX(),-vel.getY()));
-
+                lastTouchedId = -2;
+            } else
+            if (ballPos.getY() + radius > invisibleBounds && lastTouchedId != -3) {
+                Point2D vel = ball.getVelocity();
+                ball.setVelocity(new Point2D(vel.getX(),-vel.getY()));
+                lastTouchedId = -3;
             }
         }
     }
@@ -181,15 +195,16 @@ public class GameLoop extends Thread {
     }
 
     public void resetBall() {
-        ballStartAngle = Math.random()*2*Math.PI;
+        //ballStartAngle = (((int)(Math.random()*players.size()))+0.5)/(double)players.size()*Math.PI*2;
+        ballStartAngle = Math.PI*2*Math.random();
         ball = new Ball(new Point2D(0,0), new Point2D(Math.cos(ballStartAngle)*ballSpeed,Math.sin(ballStartAngle)*ballSpeed), ballRadius);
+    }
+
+    public void setPhysicsRunning(boolean physicsRunning) {
+        this.physicsRunning = physicsRunning;
     }
 
     public void setRunning(boolean running) {
         this.running = running;
     }
-
-
-
-
 }

@@ -1,19 +1,22 @@
-package com.adam.pong.tests;
+package com.adam.pong.game;
 
 import com.adam.pong.game.CPPongClient;
-import com.adam.pong.game.PongClient;
 import com.adam.pong.game.PongServer;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 
-public class multiplayerTesting {
+public class DedicatedServer {
 
     public static void main(String[] args) throws IOException {
 
         PongServer server = new PongServer();
         server.start();
+
+        for (int p = 0; p < Integer.parseInt(args[0]); p++) {
+            CPPongClient client = new CPPongClient("cpuClient" + p, InetAddress.getLocalHost().getAddress(), 25565);
+            client.start();
+        }
     }
+
 }

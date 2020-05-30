@@ -20,7 +20,6 @@ public class PongClient extends Thread {
     private int bufferSize = 65536;
     private Point2D[] debugPoints;
     private String message;
-    private String[] otherInfo;
 
     private ArrayList<UUID> completedGraphicsEvents;
     private ArrayList<GraphicsEvent> pendingGraphicsEvents;
@@ -82,7 +81,7 @@ public class PongClient extends Thread {
         if (gs.event == GameEvent.REORGANIZE_PLAYERS) {
             players = gs.players;
             ballPosition = gs.ballPosition;
-            handleMessage(gs.message);
+            this.message = gs.message;
             for (GraphicsEvent e : gs.graphicsEvents) {
                 addPendingGraphicsEvent(e);
             }
@@ -92,7 +91,7 @@ public class PongClient extends Thread {
             }
             ballPosition = gs.ballPosition;
             debugPoints = gs.debugPoints;
-            handleMessage(gs.message);
+            this.message = gs.message;
             // extracting extra info from message
             for (GraphicsEvent e : gs.graphicsEvents) {
                 addPendingGraphicsEvent(e);
@@ -119,16 +118,6 @@ public class PongClient extends Thread {
             for (Player p : players) {
                 p.setPaddle(gs.paddlePositions.get(p.getId()));
             }
-        }
-    }
-
-    private void handleMessage(String message) {
-        if (message.contains("?")) {
-            this.message = message.substring(0, message.indexOf("?"));
-            otherInfo = message.substring(message.indexOf('?') + 1).split("\\?", -1);
-        } else {
-            this.message = message;
-            otherInfo = null;
         }
     }
 
@@ -176,9 +165,6 @@ public class PongClient extends Thread {
         return message;
     }
 
-    public String[] getOtherInfo() {
-        return otherInfo;
-    }
 
 
 }

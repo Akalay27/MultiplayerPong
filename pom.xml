@@ -4,6 +4,7 @@
     <groupId>com.adam</groupId>
     <artifactId>MultiplayerPong</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>14</maven.compiler.source>
@@ -20,8 +21,13 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.10</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/commons-lang3-3.10.jar</systemPath>
+            <systemPath>${pom.basedir}/lib/commons-lang3-3.10.jar</systemPath>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>commons-lang</groupId>-->
+<!--            <artifactId>commons-lang</artifactId>-->
+<!--            <version>2.6</version>-->
+<!--        </dependency>-->
     </dependencies>
     <build>
         <plugins>
@@ -32,7 +38,6 @@
                 <configuration>
                     <release>14</release>
                 </configuration>
-
             </plugin>
             <plugin>
                 <groupId>org.openjfx</groupId>
@@ -47,6 +52,32 @@
                     <launcher>hellofx</launcher>
                     <jlinkImageName>hello</jlinkImageName>
                     <jlinkZipName>hellozip</jlinkZipName>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
+
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/libs
+                            </outputDirectory>
+                        </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>libs/</classpathPrefix>
+                            <mainClass>
+                                com.adam.pong.game.DedicatedServer
+                            </mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
