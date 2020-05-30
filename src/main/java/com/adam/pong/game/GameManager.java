@@ -42,6 +42,11 @@ public class GameManager extends Thread {
             startBoundsAnimation();
             boolean waiting = true;
             gameLoop.setPhysicsRunning(false);
+            if (currentPlayers().size() > 2) {
+                gameLoop.setBallSpeed(currentPlayers().size() * 0.5 + 2);
+            } else {
+                gameLoop.setBallSpeed(7);
+            }
             gameLoop.resetBall();
 
             final int TARGET_FPS = 60;
