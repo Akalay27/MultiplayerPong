@@ -83,7 +83,7 @@ public class Camera {
 
                 if (players[p].getId() == focusedId) {
                     if (players.length == 2) offsetFor2P = -Math.PI/2;
-                    System.out.println(p);
+
                     Point2D playerMid = PongUtils.lerp(players[p].getPlayerBounds().pt1,players[p].getPlayerBounds().pt2,0.5);
                     rotation = PongUtils.lerp(rotation, -Math.atan2(playerMid.getY(),playerMid.getX()) - Math.PI/2+ offsetFor2P, 1);
                     foundPlayer = true;

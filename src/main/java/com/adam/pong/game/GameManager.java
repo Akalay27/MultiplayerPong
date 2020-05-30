@@ -251,11 +251,11 @@ public class GameManager extends Thread {
             if (p.getState() == Player.State.JOINED) {
                 graphicsEvents.add(new ChatEvent(p.getName() + " joined the game."));
                 p.setState(Player.State.ELIMINATED);
-                System.out.println(p.getName() + " joined the game.");
+                //System.out.println(p.getName() + " joined the game.");
             }
             if (System.currentTimeMillis() - p.getLastPacketTime() >= 2000) {
                 graphicsEvents.add(new ChatEvent(p.getName() + " left the game."));
-                System.out.println(p.getName() + " left the game.");
+                //System.out.println(p.getName() + " left the game.");
                 players.remove(p);
             }
         }
