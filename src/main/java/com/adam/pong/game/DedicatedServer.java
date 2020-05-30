@@ -14,7 +14,7 @@ public class DedicatedServer {
         server.start();
 
         for (int p = 0; p < Integer.parseInt(args[0]); p++) {
-            CPPongClient client = new CPPongClient("cpuClient" + p, InetAddress.getLocalHost().getAddress(), 25565);
+            CPPongClient client = new CPPongClient(InetAddress.getLocalHost().getAddress(), 25565);
             client.start();
         }
     }

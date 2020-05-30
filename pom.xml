@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.adam</groupId>
     <artifactId>MultiplayerPong</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -49,9 +49,9 @@
                     <compress>2</compress>
                     <noHeaderFiles>true</noHeaderFiles>
                     <noManPages>true</noManPages>
-                    <launcher>hellofx</launcher>
-                    <jlinkImageName>hello</jlinkImageName>
-                    <jlinkZipName>hellozip</jlinkZipName>
+                    <launcher>PolyPong</launcher>
+                    <jlinkImageName>PolyPong</jlinkImageName>
+                    <jlinkZipName>PolyPong</jlinkZipName>
                 </configuration>
             </plugin>
             <plugin>

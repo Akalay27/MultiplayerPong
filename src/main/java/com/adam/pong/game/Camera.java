@@ -24,7 +24,6 @@ public class Camera {
     private double startAngle;
     private double finalAngle;
     private final ArrayList<ChatMessage> chatMessages;
-    private boolean showPlayerNames = false;
 
     public Camera (GraphicsContext gc) {
         this.gc = gc;
@@ -45,7 +44,7 @@ public class Camera {
         gc.setFill(playerColor);
 
         Paddle paddle = player.getPaddle();
-        if (!paddle.isNull()) {
+        if (paddle != null && !paddle.isNull()) {
             Point2D paddlePt1 = transPt(paddle.pt1);
             Point2D paddlePt2 = transPt(paddle.pt2);
             Point2D paddlePt3 = transPt(paddle.pt3);
@@ -58,9 +57,14 @@ public class Camera {
         return transPt(pt, true);
     }
 
+    private Point2D transPt(Point2D pt, boolean useRotation, boolean useScale) {
+        return PongUtils.getRotatedPoint(center,useRotation ? rotation : 0,center.subtract(pt)).multiply(useScale ? scale : 1).add(new Point2D(gc.getCanvas().getWidth()/2,gc.getCanvas().getHeight()/2));
+    }
     private Point2D transPt(Point2D pt, boolean useRotation) {
         return PongUtils.getRotatedPoint(center,useRotation ? rotation : 0,center.subtract(pt)).multiply(scale).add(new Point2D(gc.getCanvas().getWidth()/2,gc.getCanvas().getHeight()/2));
     }
+
+
 
     public void drawBall(Point2D ballPos){
         gc.setFill(Color.BLACK);
@@ -78,22 +82,32 @@ public class Camera {
                 boundsYValues.add(players[p].getPlayerBounds().pt2.getY());
 
                 if (players[p].getId() == focusedId) {
-                    if (players.length == 2 && p == 1) offsetFor2P = -Math.PI;
-                    rotation = PongUtils.lerp(rotation, -Math.PI * 2 / players.length / 2 * (1 + 2 * p) - Math.PI / 2 + offsetFor2P, 0.3); // FIX FIX FIX FIX FIX
+                    if (players.length == 2) offsetFor2P = -Math.PI/2;
+                    System.out.println(p);
+                    Point2D playerMid = PongUtils.lerp(players[p].getPlayerBounds().pt1,players[p].getPlayerBounds().pt2,0.5);
+                    rotation = PongUtils.lerp(rotation, -Math.atan2(playerMid.getY(),playerMid.getX()) - Math.PI/2+ offsetFor2P, 1);
                     foundPlayer = true;
                 }
             }
         }
         if (!foundPlayer) {
             rotation = rotation % (Math.PI*2);
-            rotation = PongUtils.lerp(rotation,0,0.1);
+            rotation = PongUtils.lerp(rotation,0,0.05);
         }
 
         double minY = Collections.min(boundsYValues);
         double maxY = Collections.max(boundsYValues);
 
-        double cvsHeight = gc.getCanvas().getHeight();
-        scale = PongUtils.lerp(scale,cvsHeight/(maxY-minY)*0.93,0.3);
+        double cvsHeight = Math.min(gc.getCanvas().getHeight(), gc.getCanvas().getWidth());
+
+
+        double scaleOffset = 0.90;
+        if (players.length == 3) {
+            scaleOffset = 0.80;
+        }
+
+
+        scale = PongUtils.lerp(scale,cvsHeight/(maxY-minY) * scaleOffset,0.3);
 
     }
     public void drawPoints(Point2D[] points,double size) {
@@ -106,7 +120,7 @@ public class Camera {
 
     public void drawMessage(String message) {
         gc.setFill(Color.WHITE);
-        gc.setFont(new Font(null,scale*20));
+        gc.setFont(new Font("Kayak Sans",scale*20));
         gc.setTextBaseline(VPos.CENTER);
         gc.setTextAlign(TextAlignment.CENTER);
         Point2D textPos = transPt(new Point2D(0,0),false);
@@ -115,7 +129,7 @@ public class Camera {
 
     public void drawPlayerName(Player player) {
         gc.save();
-        gc.setFont(new Font(null, scale * 10));
+        gc.setFont(new Font("Kayak Sans", scale * 10));
         gc.setFill(Color.BLACK);
         gc.setTextAlign(TextAlignment.CENTER);
         Paddle paddle = player.getPaddle();
@@ -230,12 +244,13 @@ public class Camera {
 
     public void drawChat() {
 
-        double xPos = gc.getCanvas().getWidth()-20;
-        gc.setFont(new Font("",27));
+        double chatScale = gc.getCanvas().getWidth()/2160 ;
+        double xPos = gc.getCanvas().getWidth()-30;
+        gc.setFont(new Font("Kayak Sans",37*chatScale));
         gc.setTextAlign(TextAlignment.RIGHT);
         gc.setFill(Color.BLACK);
         for (int c = 0; c < chatMessages.size(); c++) {
-            double yPos = c*35+30;
+            double yPos = c*48*chatScale+45;
             double alpha = (System.currentTimeMillis()-chatMessages.get(c).getCreationTime()) / 500.0;
             alpha = (alpha >= 1) ? 1 : alpha;
             double disappearAlpha = (System.currentTimeMillis()-chatMessages.get(c).getCreationTime()-6500) / 1500.0;

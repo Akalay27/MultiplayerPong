@@ -10,7 +10,7 @@ public class serverProfiling {
 
     public static void main(String[] args) throws IOException {
         for (int p = 0; p < 30; p++) {
-            CPPongClient client = new CPPongClient("cpuClient"+p, InetAddress.getLocalHost().getAddress(),25565);
+            CPPongClient client = new CPPongClient(InetAddress.getLocalHost().getAddress(),25565);
             client.start();
 
         }

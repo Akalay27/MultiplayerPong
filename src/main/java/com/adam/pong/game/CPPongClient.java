@@ -13,9 +13,11 @@ public class CPPongClient extends PongClient {
     private double distanceTolerance;
     private long lastLoopTime;
 
+    // This isn't a resource because the DedicatedServer isn't using resources
+    private static String[] botNames = {"Bot_Miguel","Bot_Isabella","Bot_Mateo","Bot_Savannah","Bot_Emilia","Bot_Maya","Bot_Elena","Bot_Gabriella","Bot_Santiago","Bot_Isla","Bot_Jose","Bot_Leonardo","Bot_Molly","Bot_Amy","Bot_Claire","Bot_DeShawn","Bot_DeAndre","Bot_Marquis","Bot_Darnell","Bot_Terrell","Bot_Malik","Bot_Trevon","Bot_Tyrone","Bot_Willie","Bot_Dominique","Bot_Demetrius","Bot_Reginald","Bot_Jamal","Bot_Maurice","Bot_Jalen","Bot_Darius","Bot_Xavier","Bot_Terrance","Bot_Andre","Bot_Darryl","Bot_Imani","Bot_Shanice","Bot_Nia","Bot_Deja","Bot_Kiara","Bot_Alexus","Bot_Raven","Bot_Liam","Bot_Noah","Bot_William","Bot_James","Bot_Oliver","Bot_Benjamin","Bot_Elijah","Bot_Elias","Bot_Lucas","Bot_Mason","Bot_Logan","Bot_Emma","Bot_Uniqua","Bot_Olivia","Bot_Ava","Bot_Isabella","Bot_Sophia","Bot_Charlotte","Bot_Mia","Bot_Amelia","Bot_Harper","Bot_Evelyn","Bot_Stephen","Bot_Adam","Bot_Garry","Bot_Garrett","Bot_Matthew","Bot_Matt","Bot_John","Bot_Robert","Bot_Michael","Bot_William","Bot_David","Bot_Richard","Bot_Joseph","Bot_Thomas","Bot_Charles","Bot_Christopher","Bot_Mark","Bot_Anthony","Bot_George","Bot_Roy","Bot_Sharkeisha","Bot_Mia","Bot_Shaiden","Bot_Charlotte","Bot_Abigail","Bot_Harper","Bot_Emily","Bot_Riley","Bot_Romeo","Bot_Nick"};
 
-    public CPPongClient(String name, byte[] address, int port) throws SocketException, UnknownHostException {
-        super(name, address, port);
+    public CPPongClient(byte[] address, int port) throws SocketException, UnknownHostException {
+        super(botNames[(int)(botNames.length*Math.random())], address, port);
     }
 
     @Override

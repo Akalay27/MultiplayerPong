@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
@@ -228,13 +229,19 @@ public class Game extends Application {
         howToPlay.setOnAction(e -> {
             primaryStage.setScene(instructions);
         });
+        Text title = new Text("PolyPong");
+        title.setId("title-text");
+        Text credit = new Text("2020 Adam Kalayjian");
+        credit.setId("credit-text");
         VBox menuButtons = new VBox(8);
         menuButtons.setAlignment(Pos.CENTER);
-        menuButtons.getChildren().addAll(singlePlayer,multiPlayer,howToPlay);
+        menuButtons.getChildren().addAll(title,singlePlayer,multiPlayer,howToPlay, credit);
         mainMenu = new Scene(menuButtons, menuWidth, menuHeight);
         mainMenu.getStylesheets().add("menuStyle.css");
         primaryStage.setScene(mainMenu);
         primaryStage.show();
+
+
     }
 
     private void joinMultiPlayerGame(String name, String ip, String port) throws UnknownHostException, SocketException {
@@ -249,7 +256,7 @@ public class Game extends Application {
         server.start();
         cpuClients = new CPPongClient[numPlayers-1];
         for (int p = 0; p < numPlayers-1; p++) {
-            CPPongClient cpuClient = new CPPongClient("cpuClient"+p,InetAddress.getLocalHost().getAddress(),25565);
+            CPPongClient cpuClient = new CPPongClient(InetAddress.getLocalHost().getAddress(),25565);
             cpuClient.start();
             cpuClients[p] = cpuClient;
         }
@@ -300,7 +307,7 @@ public class Game extends Application {
                         camera.addChatMessage(((ChatEvent) e).getMessage());
                     }
                     if (e instanceof DirectionIndicatorEvent) {
-                        camera.setAngleDisplayTimer(e.getInitTime());
+                        camera.setAngleDisplayTimer(System.currentTimeMillis());
                         camera.setBallAngles(((DirectionIndicatorEvent) e).getFinalAngle(),((DirectionIndicatorEvent) e).getStartAngle());
                     }
 
@@ -313,7 +320,7 @@ public class Game extends Application {
                 camera.updateChatMessages();
                 camera.drawAngleDisplay();
 
-                if (isQuitting && System.currentTimeMillis() - quitTimer > 3000) {
+                if (isQuitting && System.currentTimeMillis() - quitTimer > 1000) {
                     isQuitting = false;
                     backToMainMenu();
                 }
@@ -325,6 +332,7 @@ public class Game extends Application {
 
     private void backToMainMenu() {
         primaryStage.setScene(mainMenu);
+        primaryStage.setMaximized(false);
         if (cpuClients != null)
             for (CPPongClient cl : cpuClients) cl.setRunning(false);
         if (animator != null) animator.stop();

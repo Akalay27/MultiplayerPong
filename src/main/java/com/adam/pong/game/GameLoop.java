@@ -64,7 +64,6 @@ public class GameLoop extends Thread {
             Thread.yield();
           try{
                 long duration = (long) ((loopTimeMillis - System.currentTimeMillis()) + (1000.0 / 200));
-                System.out.println(duration);
                 Thread.sleep((duration >= 0) ? duration : 0);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -140,7 +139,7 @@ public class GameLoop extends Thread {
                         Point2D paddleCenter = paddle.getCenter();
                         double angleToCenter = Math.atan2(ballPos.getY()-paddleCenter.getY(),ballPos.getX()-paddleCenter.getX());
                         ball.setDirection(angleToCenter);
-                        ball.setVelocity(ball.getVelocity().add(ball.getVelocity().multiply(1/ball.getVelocity().getMagnitude()*0.3)));
+                        ball.setVelocity(ball.getVelocity().add(ball.getVelocity().multiply(1/ball.getVelocity().getMagnitude()*0.1*ballSpeed)));
                         lastTouchedId = p.getId();
                     }
                 Point2D boundsCollisionPt = ball.checkCollision(p.getPlayerBounds().pt1, p.getPlayerBounds().pt2);
@@ -206,5 +205,9 @@ public class GameLoop extends Thread {
 
     public void setRunning(boolean running) {
         this.running = running;
+    }
+
+    public void setBallSpeed(double ballSpeed) {
+        this.ballSpeed = ballSpeed;
     }
 }

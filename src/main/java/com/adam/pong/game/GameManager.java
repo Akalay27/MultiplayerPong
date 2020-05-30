@@ -63,7 +63,12 @@ public class GameManager extends Thread {
                 if (!gameInProgress && players.size() >= minPlayersToStart) {
                     timer = System.currentTimeMillis();
                     gameInProgress = true;
-
+                    if (currentPlayers().size() > 2) {
+                        gameLoop.setBallSpeed(currentPlayers().size() * 0.5 + 2);
+                    } else {
+                        gameLoop.setBallSpeed(7);
+                    }
+                    gameLoop.resetBall();
                     double ballAngle = gameLoop.getStartAngle();
                     graphicsEvents.add(new DirectionIndicatorEvent(ballAngle, ballAngle+(Math.signum(Math.random()-0.5)*(Math.PI*3*(Math.random()* 0.3 + 0.7)))));
                 }

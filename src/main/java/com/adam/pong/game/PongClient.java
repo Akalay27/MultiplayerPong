@@ -131,7 +131,7 @@ public class PongClient extends Thread {
                 return;
         }
         pendingGraphicsEvents.add(e);
-        System.out.println("New event added with UUID" + e.getUUID());
+        //System.out.println("New event added with UUID" + e.getUUID() + " type: " + e.getClass().toString());
     }
 
     public void removeGraphicsEventFromPending(UUID id) {

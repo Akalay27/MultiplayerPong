@@ -1,9 +1,20 @@
+@font-face {
+    src: url("KayakSansRegular.otf"),
+}
+@font-face {
+    src: url("KayakSansBold.otf"),
+}
+
+.text {
+    -fx-font-family: "Kayak Sans";
+}
 .button {
     -fx-background-color: #4ECDC4;
     -fx-text-fill: white;
     -fx-border-radius: 0;
     -fx-font-size: 40;
     -fx-max-width: 300;
+    -fx-font-family: "Kayak Sans";
 }
 .button:pressed {
     -fx-background-color: #42ada6;
@@ -14,6 +25,7 @@
     -fx-text-fill: white;
     -fx-border-radius: 0;
     -fx-font-size: 28;
+    -fx-font-family: "Kayak Sans";
 }
 
 .text-field {
@@ -34,20 +46,37 @@
 }
 
 #instructions {
-    -fx-font-size: 20;
-
+    -fx-font-size: 25;
+    -fx-font-family: "Kayak Sans";
 }
 
 #hotkey {
     -fx-background-color: -fx-text-box-border, -fx-background ;
     -fx-background-insets: 0, 3 3 3 3 ;
     -fx-text-fill: black;
+    -fx-font-family: "Kayak Sans";
 }
 
 #hotkey-text {
      -fx-font-size: 20;
+     -fx-font-family: "Kayak Sans";
 }
 
 .hbox {
     -fx-spacing: 10;
 }
+
+#title-text {
+    -fx-margin: 10 10 10 10;
+    -fx-font-size: 78;
+    -fx-font-family: "Kayak Sans Bold";
+}
+
+#credit-text {
+    -fx-font-size: 17;
+    -fx-font-family: "Kayak Sans Bold";
+}
+
+
+
+
