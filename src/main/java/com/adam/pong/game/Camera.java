@@ -77,7 +77,7 @@ public class Camera {
         boolean foundPlayer = false;
         double offsetFor2P = 0;
         for (int p = 0; p < players.length; p++) {
-            if (!players[p].getPlayerBounds().isNull()) {
+            if (players[p].getPlayerBounds() != null && !players[p].getPlayerBounds().isNull()) {
                 boundsYValues.add(players[p].getPlayerBounds().pt1.getY());
                 boundsYValues.add(players[p].getPlayerBounds().pt2.getY());
 
