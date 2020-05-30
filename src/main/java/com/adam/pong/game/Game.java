@@ -171,11 +171,11 @@ public class Game extends Application {
                 );
 
         HBox ks1 = new HBox();
-        Label ks1Label = new Label(" \uD83E\uDC1C ");
+        Label ks1Label = new Label(" \uD83E\uDC08 ");
         Text ks1Text = new Text("Paddle Left ");
         ks1Label.setId("hotkey");
         ks1Text.setId("hotkey-text");
-        Label ks2Label = new Label(" \uD83E\uDC1E ");
+        Label ks2Label = new Label(" \uD83E\uDC0A ");
         Text ks2Text = new Text("Paddle Right ");
         ks2Label.setId("hotkey");
         ks2Text.setId("hotkey-text");
